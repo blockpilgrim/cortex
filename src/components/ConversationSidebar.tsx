@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
@@ -30,37 +31,62 @@ export function ConversationSidebar({
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
   const setSidebarOpen = useAppStore((s) => s.setSidebarOpen)
 
+  const handleCloseSheet = useCallback(
+    () => setSidebarOpen(false),
+    [setSidebarOpen],
+  )
+
   return (
     <>
-      {/* Desktop: inline sidebar */}
+      {/* Desktop: inline sidebar — stays open on interaction */}
       {sidebarOpen && (
-        <aside className="border-border bg-background hidden w-64 shrink-0 border-r md:block">
+        <aside
+          role="navigation"
+          className="border-border bg-background hidden w-64 shrink-0 border-r md:block"
+        >
           <SidebarContent onNewConversation={onNewConversation} />
         </aside>
       )}
 
-      {/* Mobile: Sheet overlay */}
+      {/* Mobile: Sheet overlay — closes on interaction */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-72 p-0 md:hidden">
+        <SheetContent
+          side="left"
+          className="w-72 p-0 md:hidden"
+          aria-describedby={undefined}
+        >
           <SheetHeader className="border-border border-b px-4 py-3">
             <SheetTitle>Conversations</SheetTitle>
+            <SheetDescription className="sr-only">
+              Browse and select conversations
+            </SheetDescription>
           </SheetHeader>
-          <SidebarContent onNewConversation={onNewConversation} />
+          <SidebarContent
+            onNewConversation={onNewConversation}
+            onAfterAction={handleCloseSheet}
+          />
         </SheetContent>
       </Sheet>
     </>
   )
 }
 
-/** Shared sidebar content used by both desktop and mobile variants. */
+/**
+ * Shared sidebar content used by both desktop and mobile variants.
+ *
+ * `onAfterAction` is called after selecting a conversation or creating a new one.
+ * The mobile Sheet passes a close handler; the desktop variant omits it so the
+ * sidebar stays open on interaction.
+ */
 function SidebarContent({
   onNewConversation,
+  onAfterAction,
 }: {
   onNewConversation: () => void
+  onAfterAction?: () => void
 }) {
   const activeConversationId = useAppStore((s) => s.activeConversationId)
   const setActiveConversationId = useAppStore((s) => s.setActiveConversationId)
-  const setSidebarOpen = useAppStore((s) => s.setSidebarOpen)
 
   const conversations = useLiveQuery(
     () => db.conversations.orderBy('updatedAt').reverse().toArray(),
@@ -70,16 +96,15 @@ function SidebarContent({
   const handleSelect = useCallback(
     (id: number) => {
       setActiveConversationId(id)
-      // Close sidebar on mobile after selecting
-      setSidebarOpen(false)
+      onAfterAction?.()
     },
-    [setActiveConversationId, setSidebarOpen],
+    [setActiveConversationId, onAfterAction],
   )
 
   const handleNewConversation = useCallback(() => {
     onNewConversation()
-    setSidebarOpen(false)
-  }, [onNewConversation, setSidebarOpen])
+    onAfterAction?.()
+  }, [onNewConversation, onAfterAction])
 
   return (
     <div className="flex h-full flex-col">

@@ -6,7 +6,7 @@
  * - Content area (fills remaining height):
  *   - ConversationSidebar (desktop: inline, mobile: Sheet overlay)
  *   - Main area:
- *     - Three model columns (grid-cols-3 on desktop, stacked on mobile)
+ *     - Three model columns (flex-row on desktop, flex-col stacked on mobile)
  *     - InputBar pinned to bottom
  */
 

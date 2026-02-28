@@ -12,8 +12,10 @@ Patterns and anti-patterns for the Cortex codebase. Updated as the project evolv
 src/
   components/
     ui/          # shadcn/ui primitives (auto-generated, do not hand-edit)
-  lib/           # Shared utilities (cn(), helpers)
+  lib/           # Shared utilities and core modules
     db/          # Data layer (Dexie schema, types, data access functions)
+    store.ts     # Zustand store (ephemeral UI state)
+    utils.ts     # Utility functions (cn(), helpers)
   hooks/         # Custom React hooks
   test/          # Test setup and shared test utilities
 e2e/             # Playwright E2E tests
@@ -192,6 +194,130 @@ import { db } from '@/lib/db'
 - `deleteConversation` cascades to messages using a Dexie transaction
 - Settings is a singleton (always `id=1`); `getSettings()` auto-initializes on first run using `put` (upsert) to avoid race conditions
 - `updateSettings()` shallow-merges nested objects (`apiKeys`, `selectedModels`) — callers can update a single provider key without overwriting others
+
+---
+
+## Zustand Store
+
+**When to use**: For all ephemeral UI state (not persisted to IndexedDB).
+
+- Store lives at `src/lib/store.ts`
+- Split into `AppState` (data) and `AppActions` (setters) interfaces, composed as `AppStore = AppState & AppActions`
+- Use selector-based access (one selector per field) to minimize re-renders
+- Import from `@/lib/store`
+
+**Example**:
+```tsx
+import { useAppStore } from '@/lib/store'
+
+// Good — granular selectors, only re-renders when that field changes
+const activeId = useAppStore((s) => s.activeConversationId)
+const setActiveId = useAppStore((s) => s.setActiveConversationId)
+
+// Bad — subscribes to entire store, re-renders on any change
+const store = useAppStore()
+```
+
+**Testing**: Reset store in `beforeEach` to prevent state leakage between tests:
+```ts
+import { useAppStore } from '@/lib/store'
+
+beforeEach(() => {
+  useAppStore.setState({ activeConversationId: null, sidebarOpen: false })
+})
+```
+
+**Why**: Zustand is lightweight (~1 KB), has no provider wrappers, and works outside React components. Granular selectors prevent cascading re-renders from streaming updates.
+
+---
+
+## Reactive Data with useLiveQuery
+
+**When to use**: When a React component needs to reactively display data from Dexie (IndexedDB).
+
+- Import `useLiveQuery` from `dexie-react-hooks`
+- Always provide a dependency array as the second argument
+- Handle the `undefined` return (loading state) before checking for empty data
+- Prefer calling data access functions from `@/lib/db` inside the callback rather than raw Dexie queries
+- When returning an empty array for a null/skipped query, cast it: `return [] as Message[]`
+
+**Example**:
+```tsx
+import { useLiveQuery } from 'dexie-react-hooks'
+import { getMessagesByThread } from '@/lib/db'
+import type { Message } from '@/lib/db/types'
+
+const messages = useLiveQuery(() => {
+  if (activeConversationId === null) return [] as Message[]
+  return getMessagesByThread(activeConversationId, provider)
+}, [activeConversationId, provider])
+
+// Handle loading vs empty
+if (messages === undefined) return <Loading />
+if (messages.length === 0) return <EmptyState />
+```
+
+**Why**: `useLiveQuery` automatically re-renders the component when the underlying Dexie data changes, even across browser tabs. Using data access functions inside the callback keeps query logic in the data layer while still enabling Dexie's reactive tracking.
+
+---
+
+## React.memo for Stream Isolation
+
+**When to use**: Wrap model columns (and similar independently-updating components) in `React.memo`.
+
+**Example**:
+```tsx
+import { memo } from 'react'
+
+export const ModelColumn = memo(function ModelColumn({ provider, label }: Props) {
+  // Component body
+})
+```
+
+**Why**: When three AI models stream tokens simultaneously, each column receives high-frequency updates. `React.memo` prevents tokens arriving for one provider from re-rendering the other columns. Use a named function (not an arrow function) inside `memo()` for better debugging in React DevTools.
+
+---
+
+## Responsive Desktop/Mobile Pattern
+
+**When to use**: When a component needs fundamentally different rendering on desktop vs mobile (not just layout changes).
+
+- Render both variants simultaneously, use Tailwind responsive classes (`hidden md:block` / `md:hidden`) for visibility
+- For interactive overlays (Sheet, Dialog), pass an `onAfterAction` callback only to the mobile variant so it can auto-close; the desktop variant stays open on interaction
+
+**Example** (ConversationSidebar pattern):
+```tsx
+// Desktop: inline panel, stays open on interaction
+{sidebarOpen && (
+  <aside className="hidden w-64 border-r md:block">
+    <SidebarContent onNewConversation={onNew} />
+  </aside>
+)}
+
+// Mobile: Sheet overlay, closes on interaction
+<Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+  <SheetContent className="md:hidden">
+    <SidebarContent onNewConversation={onNew} onAfterAction={closeSheet} />
+  </SheetContent>
+</Sheet>
+```
+
+**Why**: CSS-based visibility is simpler and more reliable than JS media query hooks. The `onAfterAction` pattern cleanly separates desktop (sidebar stays open) from mobile (overlay closes) behavior without conditional logic inside the shared content component.
+
+---
+
+## Testing with Radix Overlays (Sheet, Dialog)
+
+**When to use**: When testing components that include Radix-based overlays (Sheet, Dialog).
+
+- In jsdom, CSS media queries don't apply, so both desktop and mobile variants render simultaneously
+- The Sheet's `aria-modal` overlay blocks `getByRole` queries for elements behind it
+- **Fix for component isolation**: Set `sidebarOpen: false` in Zustand `beforeEach` when testing components that don't need the sidebar
+- **Fix for sidebar tests**: Use `within(container.querySelector('aside')!)` to scope queries to the desktop variant; use `fireEvent.click` instead of `userEvent.click` to bypass pointer-event checks
+- **Fix for hidden elements**: The desktop aside has `class="hidden md:block"` which makes it `display: none` in jsdom. Use `{ hidden: true }` option with `getByRole` to find elements inside it
+- Polyfill `ResizeObserver` as a class (not a mock) for Radix ScrollArea: `class ResizeObserverStub { observe() {} unobserve() {} disconnect() {} }`
+
+**Why**: These workarounds are necessary because jsdom lacks CSS layout engine features (media queries, computed visibility). Document them here to prevent future developers from debugging the same issues.
 
 ---
 

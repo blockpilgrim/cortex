@@ -9,7 +9,7 @@
 import { memo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { db } from '@/lib/db'
+import { getMessagesByThread } from '@/lib/db'
 import type { Message, Provider } from '@/lib/db/types'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
@@ -34,13 +34,7 @@ export const ModelColumn = memo(function ModelColumn({
 
   const messages = useLiveQuery(() => {
     if (activeConversationId === null) return [] as Message[]
-    return db.messages
-      .where('[conversationId+provider+timestamp]')
-      .between(
-        [activeConversationId, provider, ''],
-        [activeConversationId, provider, '\uffff'],
-      )
-      .toArray()
+    return getMessagesByThread(activeConversationId, provider)
   }, [activeConversationId, provider])
 
   return (

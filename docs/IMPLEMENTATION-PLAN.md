@@ -62,7 +62,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 3: App Shell & Layout
+- [x] ## Phase 3: App Shell & Layout
 
 **Goal**: The three-column (desktop) / stacked (mobile) layout renders with placeholder content. Navigation between conversations works.
 

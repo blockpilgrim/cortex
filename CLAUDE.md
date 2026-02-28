@@ -9,7 +9,7 @@ Cortex is a unified tri-model AI workspace — a client-side SPA that sends user
 ## Tech Stack
 
 - **Frontend:** Vite 7 + React 19 + TypeScript
-- **Styling:** Tailwind CSS v4 + shadcn/ui + shadcn-chat
+- **Styling:** Tailwind CSS v4 + shadcn/ui
 - **AI Streaming:** Vercel AI SDK (`ai`, `@ai-sdk/react`) with provider adapters (`@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`)
 - **Persistence:** Dexie.js v4 (IndexedDB) — conversations, messages, API keys stored locally
 - **State:** Zustand v5 for ephemeral UI state
@@ -61,7 +61,7 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 
 13 sequential phases defined in `docs/IMPLEMENTATION-PLAN.md`. Key dependency: Phases 2-3 (data layer, app shell) and Phase 4 (proxy) can run in parallel. Phases 7-9 parallelize after Phase 6.
 
-**Current status:** Phase 2 complete. Data layer (Dexie.js schema, TypeScript types, CRUD operations for conversations/messages/settings) implemented and tested.
+**Current status:** Phase 3 complete. App shell and layout (Zustand store, TopBar, ConversationSidebar, ModelColumn, InputBar) implemented and tested. Data layer (Phase 2) provides persistence via Dexie.js.
 
 ## Workflow: /implement Skill
 

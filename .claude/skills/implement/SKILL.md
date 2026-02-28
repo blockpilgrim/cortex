@@ -14,15 +14,17 @@ Use the **builder** subagent to implement the feature: $ARGUMENTS
 
 Wait for it to complete and note its summary.
 
-## Step 2 — Test
+## Step 2 — Test (conditional)
 
-Use the **test-writer** subagent to write tests for the implementation from Step 1.
+Review the builder's summary. Invoke the **test-writer** subagent if the implementation includes testable logic — data access, business rules, non-trivial transformations, or error handling paths.
 
-Wait for it to complete and note its coverage summary.
+**Skip** if the work is primarily scaffolding, configuration, layout, or wiring with no meaningful logic to verify. Note that you skipped and why.
+
+If invoked, wait for it to complete and note its coverage summary.
 
 ## Step 3 — Code Review
 
-Use the **code-reviewer** subagent to review the changes made in Steps 1 and 2.
+Use the **code-reviewer** subagent to review the changes made in Steps 1 and 2 (if applicable).
 
 Wait for it to complete. Read the full review document it created.
 
