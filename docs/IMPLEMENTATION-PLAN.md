@@ -98,7 +98,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 4: API Proxy (Cloudflare Worker)
+- [x] ## Phase 4: API Proxy (Cloudflare Worker)
 
 **Goal**: A deployed Cloudflare Pages Function that accepts a request with a model provider, API key, and message history, then streams the response back.
 

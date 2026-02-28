@@ -344,3 +344,46 @@ export const ModelColumn = memo(function ModelColumn({ provider, label }: Props)
 ```tsx
 <div className="bg-background text-foreground">
 ```
+
+---
+
+## Cloudflare Pages Functions (API Proxy)
+
+**When to use**: For all server-side proxy code that forwards requests to AI providers.
+
+- Pages Functions live in `functions/` at the project root
+- File path maps to route: `functions/api/chat.ts` -> `POST /api/chat`
+- Export `onRequestPost` for POST handlers, `onRequestOptions` for CORS preflight
+- The `PagesFunction` type from `@cloudflare/workers-types` is available globally (no import needed)
+- Functions have their own `functions/tsconfig.json` separate from the app's TS config
+- Use `createAnthropic()`, `createOpenAI()`, `createGoogleGenerativeAI()` with `{ apiKey }` for BYOK pattern
+- Use `streamText().toUIMessageStreamResponse()` to produce streams compatible with `useChat`
+- Always add CORS headers to all responses (including error responses)
+
+**Example**:
+```ts
+import { streamText } from 'ai'
+import { createAnthropic } from '@ai-sdk/anthropic'
+
+export const onRequestPost: PagesFunction = async (context) => {
+  const { model, messages, apiKey } = await context.request.json()
+  const anthropic = createAnthropic({ apiKey })
+  const result = streamText({ model: anthropic(model), messages })
+  return corsResponse(result.toUIMessageStreamResponse())
+}
+```
+
+**Why**: A unified proxy eliminates CORS issues across all three providers and keeps one code path for streaming, error handling, and testing.
+
+---
+
+## Proxy Error Handling
+
+**When to use**: When handling errors in the API proxy.
+
+- Map provider errors to a consistent JSON shape: `{ error: { code, message, provider? } }`
+- Use HTTP status codes: 401 (auth), 429 (rate limit), 504 (timeout), 502 (provider outage), 400 (validation), 500 (unknown)
+- Provide user-friendly error messages that don't leak raw provider details
+- Use the AI SDK's `onError` callback in `toUIMessageStreamResponse()` for mid-stream errors
+
+**Why**: The SPA can display consistent error UI regardless of which provider failed. The error shape is the same for pre-stream (HTTP response) and mid-stream (stream event) errors.
