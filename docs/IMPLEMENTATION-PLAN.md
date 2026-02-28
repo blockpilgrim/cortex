@@ -163,7 +163,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 6: Tri-Model Streaming
+- [x] ## Phase 6: Tri-Model Streaming
 
 **Goal**: A single user message fans out to all three providers concurrently. Each column streams independently.
 

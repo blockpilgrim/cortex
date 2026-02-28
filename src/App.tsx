@@ -56,24 +56,27 @@ function App() {
         // Allow the state update and useProviderChat seeding effect to settle.
         // The seeding effect runs on conversationId change; without this delay,
         // send() fires before the hook sees the new ID. This is a known
-        // timing-based workaround — Phase 6+ may replace it with a ref-based
-        // queue or callback pattern if it proves flaky on slower devices.
+        // timing-based workaround — may be replaced with a ref-based queue or
+        // callback pattern if it proves flaky on slower devices.
         await new Promise((resolve) => setTimeout(resolve, 50))
       } else {
         // Update the conversation's updatedAt timestamp
         await updateConversation(conversationId, {})
       }
 
-      // Send to all providers concurrently via imperative handles.
-      // For Phase 5 we only send to Claude; the other columns will be
-      // wired up in Phase 6. Ref access here is safe -- we're inside a callback.
+      // Send to all three providers concurrently via imperative handles.
+      // Each send() is independent -- Promise.allSettled ensures one provider
+      // failing does not block or affect the others.
       const sendPromises: Promise<boolean>[] = []
       if (claudeRef.current) {
         sendPromises.push(claudeRef.current.send(text))
       }
-      // Phase 6 will add:
-      // if (chatgptRef.current) sendPromises.push(chatgptRef.current.send(text))
-      // if (geminiRef.current) sendPromises.push(geminiRef.current.send(text))
+      if (chatgptRef.current) {
+        sendPromises.push(chatgptRef.current.send(text))
+      }
+      if (geminiRef.current) {
+        sendPromises.push(geminiRef.current.send(text))
+      }
 
       await Promise.allSettled(sendPromises)
     },
