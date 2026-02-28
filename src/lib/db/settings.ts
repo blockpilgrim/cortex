@@ -33,7 +33,7 @@ export async function getSettings(): Promise<Settings> {
   if (record) return record
 
   // First run — persist defaults so future reads hit the DB
-  await db.settings.add({ ...DEFAULT_SETTINGS })
+  await db.settings.put({ ...DEFAULT_SETTINGS })
   return { ...DEFAULT_SETTINGS }
 }
 
@@ -46,24 +46,26 @@ export async function getSettings(): Promise<Settings> {
 export async function updateSettings(
   input: UpdateSettingsInput,
 ): Promise<void> {
-  const current = await getSettings()
+  await db.transaction('rw', db.settings, async () => {
+    const current = await getSettings()
 
-  const merged: Partial<Settings> = {}
+    const merged: Partial<Settings> = {}
 
-  if (input.apiKeys !== undefined) {
-    merged.apiKeys = { ...current.apiKeys, ...input.apiKeys }
-  }
-
-  if (input.selectedModels !== undefined) {
-    merged.selectedModels = {
-      ...current.selectedModels,
-      ...input.selectedModels,
+    if (input.apiKeys !== undefined) {
+      merged.apiKeys = { ...current.apiKeys, ...input.apiKeys }
     }
-  }
 
-  if (input.theme !== undefined) {
-    merged.theme = input.theme
-  }
+    if (input.selectedModels !== undefined) {
+      merged.selectedModels = {
+        ...current.selectedModels,
+        ...input.selectedModels,
+      }
+    }
 
-  await db.settings.update(1, merged)
+    if (input.theme !== undefined) {
+      merged.theme = input.theme
+    }
+
+    await db.settings.update(1, merged)
+  })
 }

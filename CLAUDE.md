@@ -61,7 +61,7 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 
 13 sequential phases defined in `docs/IMPLEMENTATION-PLAN.md`. Key dependency: Phases 2-3 (data layer, app shell) and Phase 4 (proxy) can run in parallel. Phases 7-9 parallelize after Phase 6.
 
-**Current status:** Phase 1 complete. Scaffold, tooling, and dev environment configured.
+**Current status:** Phase 2 complete. Data layer (Dexie.js schema, TypeScript types, CRUD operations for conversations/messages/settings) implemented and tested.
 
 ## Workflow: /implement Skill
 

@@ -169,6 +169,7 @@ Place a single smoke-test file at `src/components/ui-components.test.tsx` (outsi
 
 **Example**:
 ```ts
+// Data access functions and types
 import {
   createConversation,
   addMessage,
@@ -176,6 +177,9 @@ import {
   type Conversation,
   type Provider,
 } from '@/lib/db'
+
+// Direct db access (for useLiveQuery, advanced queries)
+import { db } from '@/lib/db'
 ```
 
 **Why**: Keeps the data layer modular and testable. The barrel export provides a clean public API while internal files can be refactored freely. Separating types from schema from access functions prevents circular dependencies.
@@ -186,7 +190,8 @@ import {
 - Timestamps (`createdAt`, `updatedAt`, `timestamp`) are set automatically by the access functions, not the caller
 - `updateConversation` auto-bumps `updatedAt`
 - `deleteConversation` cascades to messages using a Dexie transaction
-- Settings is a singleton (always `id=1`); `getSettings()` auto-initializes on first run
+- Settings is a singleton (always `id=1`); `getSettings()` auto-initializes on first run using `put` (upsert) to avoid race conditions
+- `updateSettings()` shallow-merges nested objects (`apiKeys`, `selectedModels`) — callers can update a single provider key without overwriting others
 
 ---
 

@@ -36,7 +36,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 2: Data Layer
+- [x] ## Phase 2: Data Layer
 
 **Goal**: Conversations and messages can be created, read, and queried from IndexedDB. No UI beyond a dev-mode test harness if needed.
 

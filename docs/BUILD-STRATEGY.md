@@ -162,13 +162,13 @@ A Cloudflare Worker solves this uniformly: it receives requests from the SPA, ca
 - `role` — `user` | `assistant`
 - `content` — full text
 - `timestamp` (indexed)
-- `tokenCount` — input/output token counts from API response
+- `tokenCount` — input/output token counts from API response (null for user messages)
 - `isCrossFeed` — boolean flag for cross-feed messages
 - `crossFeedRound` — which round (for grouping in UI)
 - Compound index: `[conversationId+provider+timestamp]` for efficient per-thread queries
 
 **Settings** (single record)
-- `apiKeys` — per-provider, encrypted at rest if feasible
+- `apiKeys` — per-provider, stored as plain strings (encryption deferred — single-user tool with local-only storage)
 - `selectedModels` — per-provider model IDs
 - `theme` — dark/light
 
