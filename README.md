@@ -1,10 +1,10 @@
-# Cortex
+# Quorum
 
 A tri-model AI workspace that sends your prompt to Claude, ChatGPT, and Gemini simultaneously and streams all three responses in real time.
 
 ## What It Does
 
-Cortex eliminates the tab-switching workflow of comparing AI models. Type a message once, and it fans out to three providers concurrently — each maintaining its own independent conversation history. Three columns stream tokens side-by-side, so you can watch how Claude, ChatGPT, and Gemini approach the same question differently.
+Quorum eliminates the tab-switching workflow of comparing AI models. Type a message once, and it fans out to three providers concurrently — each maintaining its own independent conversation history. Three columns stream tokens side-by-side, so you can watch how Claude, ChatGPT, and Gemini approach the same question differently.
 
 The interesting part is **cross-feed**: a single button press takes each model's latest response and shares it with the other two, triggering a second round of concurrent responses. The models effectively review each other's work. You can repeat this for as many rounds as you want — useful for iterative reasoning, code review, or getting models to challenge each other's assumptions.
 
@@ -75,7 +75,7 @@ For the proxy in production, deploy to Cloudflare Pages — `wrangler.toml` is p
 
 ## Live Demo
 
-**[cortex-25w.pages.dev](https://cortex-25w.pages.dev/)**
+**[cortex-25w.pages.dev](https://cortex-25w.pages.dev/)** *(URL will change after Cloudflare Pages migration)*
 
 Bring your own API keys — enter them in the settings dialog (gear icon).
 

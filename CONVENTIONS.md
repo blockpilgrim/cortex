@@ -1,6 +1,6 @@
 # Conventions
 
-Patterns and anti-patterns for the Cortex codebase. Updated as the project evolves.
+Patterns and anti-patterns for the Quorum codebase. Updated as the project evolves.
 
 ---
 

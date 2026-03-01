@@ -1,5 +1,5 @@
 /**
- * Public API for the Cortex data layer.
+ * Public API for the Quorum data layer.
  *
  * Import from `@/lib/db` to access all types and data access functions.
  */

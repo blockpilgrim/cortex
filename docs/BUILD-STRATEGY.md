@@ -1,4 +1,4 @@
-# Build Strategy: Cortex — Unified Tri-Model AI Workspace
+# Build Strategy: Quorum — Unified Tri-Model AI Workspace
 
 ## Guiding Constraints
 

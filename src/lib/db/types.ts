@@ -1,5 +1,5 @@
 /**
- * Data model types for the Cortex IndexedDB schema.
+ * Data model types for the Quorum IndexedDB schema.
  *
  * These types define the shape of records stored in Dexie tables.
  * Fields ending with `?` are optional on creation (auto-set or nullable).

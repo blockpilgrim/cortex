@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.svg', 'icon-512.svg', 'apple-touch-icon.svg'],
       manifest: {
-        name: 'Cortex - Tri-Model AI Workspace',
-        short_name: 'Cortex',
+        name: 'Quorum - Tri-Model AI Workspace',
+        short_name: 'Quorum',
         description:
           'Send messages to Claude, ChatGPT, and Gemini simultaneously',
         theme_color: '#1a1a2e',

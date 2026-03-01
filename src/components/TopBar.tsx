@@ -36,7 +36,7 @@ export function TopBar({ onNewConversation, onSearchOpen }: TopBarProps) {
       </Button>
 
       <h1 className="text-foreground text-lg font-semibold tracking-tight">
-        Cortex
+        Quorum
       </h1>
 
       <div className="flex-1" />

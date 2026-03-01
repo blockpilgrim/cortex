@@ -62,7 +62,7 @@ export function sanitizeFilename(input: string): string {
 /**
  * Build a filename for an export.
  *
- * Pattern: `cortex-{title}-{YYYY-MM-DD}.{ext}`
+ * Pattern: `quorum-{title}-{YYYY-MM-DD}.{ext}`
  */
 export function buildExportFilename(
   title: string,
@@ -70,7 +70,7 @@ export function buildExportFilename(
 ): string {
   const sanitized = sanitizeFilename(title)
   const date = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
-  const name = sanitized ? `cortex-${sanitized}-${date}` : `cortex-${date}`
+  const name = sanitized ? `quorum-${sanitized}-${date}` : `quorum-${date}`
   return `${name}.${extension}`
 }
 

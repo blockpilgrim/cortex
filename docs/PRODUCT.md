@@ -1,4 +1,4 @@
-# Product Spec: Unified Tri-Model AI Workspace
+# Product Spec: Quorum — Unified Tri-Model AI Workspace
 
 ## Product Goal
 Build a clean, responsive, reliable web app where a single user message is sent to Claude, ChatGPT, and Gemini simultaneously, while each model maintains an independent conversation thread and context.

@@ -1,4 +1,4 @@
-# Implementation Plan: Cortex MVP
+# Implementation Plan: Quorum MVP
 
 Each phase produces a working, testable increment. Phases are sequential — later phases depend on earlier ones. Within a phase, tasks can often be parallelized.
 
@@ -316,7 +316,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 3. **Trigger download**
    - Generate a Blob, create an object URL, trigger download
-   - File naming: `cortex-{conversation-title}-{date}.json`
+   - File naming: `quorum-{conversation-title}-{date}.json`
 
 4. **Add export actions to the UI**
    - Export current conversation (from conversation menu or top bar)

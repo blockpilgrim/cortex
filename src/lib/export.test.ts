@@ -3,7 +3,7 @@
  *
  * Covers:
  * - sanitizeFilename: special char removal, lowercasing, spaces to hyphens, truncation
- * - buildExportFilename: correct format cortex-{title}-{YYYY-MM-DD}.{ext}
+ * - buildExportFilename: correct format quorum-{title}-{YYYY-MM-DD}.{ext}
  * - exportConversationToJson: valid JSON output with correct structure
  * - exportAllConversationsToJson: array of conversations
  * - exportConversationToMarkdown: per-provider sections, interleaved timeline
@@ -135,30 +135,30 @@ describe('sanitizeFilename', () => {
 describe('buildExportFilename', () => {
   it('produces the correct format for json', () => {
     const filename = buildExportFilename('My Chat', 'json')
-    // Pattern: cortex-{sanitized-title}-{YYYY-MM-DD}.json
-    expect(filename).toMatch(/^cortex-my-chat-\d{4}-\d{2}-\d{2}\.json$/)
+    // Pattern: quorum-{sanitized-title}-{YYYY-MM-DD}.json
+    expect(filename).toMatch(/^quorum-my-chat-\d{4}-\d{2}-\d{2}\.json$/)
   })
 
   it('produces the correct format for md', () => {
     const filename = buildExportFilename('My Chat', 'md')
-    expect(filename).toMatch(/^cortex-my-chat-\d{4}-\d{2}-\d{2}\.md$/)
+    expect(filename).toMatch(/^quorum-my-chat-\d{4}-\d{2}-\d{2}\.md$/)
   })
 
   it('sanitizes the title in the filename', () => {
     const filename = buildExportFilename('Hello World!!! @#$', 'json')
-    expect(filename).toMatch(/^cortex-hello-world-\d{4}-\d{2}-\d{2}\.json$/)
+    expect(filename).toMatch(/^quorum-hello-world-\d{4}-\d{2}-\d{2}\.json$/)
   })
 
   it('handles an empty title gracefully', () => {
     const filename = buildExportFilename('', 'json')
-    // When sanitized title is empty, should be cortex-{date}.json
-    expect(filename).toMatch(/^cortex-\d{4}-\d{2}-\d{2}\.json$/)
+    // When sanitized title is empty, should be quorum-{date}.json
+    expect(filename).toMatch(/^quorum-\d{4}-\d{2}-\d{2}\.json$/)
     expect(filename).not.toContain('--')
   })
 
   it('handles a title of only special characters', () => {
     const filename = buildExportFilename('!@#$%', 'md')
-    expect(filename).toMatch(/^cortex-\d{4}-\d{2}-\d{2}\.md$/)
+    expect(filename).toMatch(/^quorum-\d{4}-\d{2}-\d{2}\.md$/)
   })
 
   it('includes today date in YYYY-MM-DD format', () => {

@@ -1,5 +1,5 @@
 /**
- * App shell -- the root layout component for Cortex.
+ * App shell -- the root layout component for Quorum.
  *
  * Layout structure:
  * - TopBar (fixed height)

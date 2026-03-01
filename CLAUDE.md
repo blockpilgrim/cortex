@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Cortex is a unified tri-model AI workspace — a client-side SPA that sends user messages to Claude, ChatGPT, and Gemini simultaneously, maintaining independent conversation threads per model. Single-user tool, no auth.
+Quorum is a unified tri-model AI workspace — a client-side SPA that sends user messages to Claude, ChatGPT, and Gemini simultaneously, maintaining independent conversation threads per model. Single-user tool, no auth.
 
 ## Tech Stack
 

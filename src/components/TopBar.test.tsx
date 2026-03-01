@@ -10,7 +10,7 @@ beforeEach(() => {
 describe('TopBar', () => {
   it('renders title and action buttons', () => {
     render(<TopBar onNewConversation={vi.fn()} />)
-    expect(screen.getByText('Cortex')).toBeInTheDocument()
+    expect(screen.getByText('Quorum')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Toggle sidebar' }),
     ).toBeInTheDocument()
