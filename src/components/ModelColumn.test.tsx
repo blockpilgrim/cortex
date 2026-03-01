@@ -11,7 +11,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import type { UIMessage } from 'ai'
 import { ModelColumn } from '@/components/ModelColumn'
 import { useAppStore } from '@/lib/store'
-import { db } from '@/lib/db'
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 // Mock useProviderChat to avoid AI SDK dependencies in component tests
 const mockSend = vi.fn().mockResolvedValue(true)
@@ -43,9 +43,7 @@ vi.mock('@/hooks/useProviderChat', () => ({
 
 beforeEach(async () => {
   useAppStore.setState({ activeConversationId: null, sidebarOpen: false })
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
   mockMessages = []
   mockStatus = 'ready'
   mockError = undefined
@@ -53,7 +51,7 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 describe('ModelColumn', () => {

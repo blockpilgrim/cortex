@@ -6,6 +6,7 @@ import {
   MODEL_OPTIONS,
   MODEL_DISPLAY_NAMES,
   PROVIDER_LABELS,
+  PROVIDERS,
   getModelDisplayName,
 } from '@/lib/models'
 
@@ -23,7 +24,7 @@ describe('MODEL_OPTIONS', () => {
   })
 
   it('each model has an id and label', () => {
-    for (const provider of ['claude', 'chatgpt', 'gemini'] as const) {
+    for (const provider of PROVIDERS) {
       for (const model of MODEL_OPTIONS[provider]) {
         expect(model.id).toBeTruthy()
         expect(model.label).toBeTruthy()
@@ -34,7 +35,7 @@ describe('MODEL_OPTIONS', () => {
   })
 
   it('has no duplicate model IDs within a provider', () => {
-    for (const provider of ['claude', 'chatgpt', 'gemini'] as const) {
+    for (const provider of PROVIDERS) {
       const ids = MODEL_OPTIONS[provider].map((m) => m.id)
       expect(new Set(ids).size).toBe(ids.length)
     }

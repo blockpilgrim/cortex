@@ -7,7 +7,7 @@
  */
 
 import type { Message, Provider } from '@/lib/db/types'
-import { PROVIDER_LABELS } from '@/lib/models'
+import { PROVIDER_LABELS, PROVIDERS } from '@/lib/models'
 
 /** Latest assistant response text per provider. */
 export interface CrossFeedInput {
@@ -31,9 +31,7 @@ function buildMessageForProvider(
   targetProvider: Provider,
   input: CrossFeedInput,
 ): string {
-  const otherProviders = (['claude', 'chatgpt', 'gemini'] as Provider[]).filter(
-    (p) => p !== targetProvider,
-  )
+  const otherProviders = PROVIDERS.filter((p) => p !== targetProvider)
 
   const sections = otherProviders
     .map((p) => `**${PROVIDER_LABELS[p]}'s response:**\n${input[p]}`)

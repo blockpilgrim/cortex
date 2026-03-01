@@ -15,6 +15,7 @@ import App from '@/App'
 import { useAppStore } from '@/lib/store'
 import { db, updateSettings } from '@/lib/db'
 import type { Provider } from '@/lib/db/types'
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 // Per-provider mock send functions so we can verify each provider received the message
 const mockSendClaude = vi.fn().mockResolvedValue(true)
@@ -47,9 +48,7 @@ beforeEach(async () => {
     sidebarOpen: false,
     streamingStatus: { claude: false, chatgpt: false, gemini: false },
   })
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
   vi.clearAllMocks()
 
   // Restore default resolved values after clearAllMocks
@@ -59,7 +58,7 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 describe('App', () => {

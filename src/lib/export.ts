@@ -7,7 +7,7 @@
  */
 
 import type { Conversation, Message, Provider } from '@/lib/db/types'
-import { PROVIDER_LABELS } from '@/lib/models'
+import { PROVIDER_LABELS, PROVIDERS } from '@/lib/models'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,8 +122,6 @@ export function exportAllConversationsToJson(
 // ---------------------------------------------------------------------------
 // Markdown Export
 // ---------------------------------------------------------------------------
-
-const PROVIDERS: Provider[] = ['claude', 'chatgpt', 'gemini']
 
 /**
  * Format a single message as Markdown.

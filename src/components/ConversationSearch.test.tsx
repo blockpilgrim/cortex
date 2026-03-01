@@ -28,14 +28,6 @@ vi.mock('dexie-react-hooks', () => ({
   },
 }))
 
-// Radix Dialog uses ResizeObserver
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-global.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
-
 const mockOnOpenChange = vi.fn()
 
 function setConversations(convs: Conversation[]) {

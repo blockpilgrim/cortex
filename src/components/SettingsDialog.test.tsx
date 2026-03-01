@@ -13,14 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { SettingsDialog } from '@/components/SettingsDialog'
 import { useAppStore } from '@/lib/store'
 import { db, updateSettings } from '@/lib/db'
-
-// Radix Select uses pointer events that need this polyfill in jsdom
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-global.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 // Radix Select calls scrollIntoView on items, which jsdom doesn't implement
 Element.prototype.scrollIntoView = vi.fn()
@@ -36,13 +29,11 @@ beforeEach(async () => {
     },
     streamingStatus: { claude: false, chatgpt: false, gemini: false },
   })
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 describe('SettingsDialog', () => {

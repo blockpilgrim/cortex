@@ -13,16 +13,9 @@
 import 'fake-indexeddb/auto'
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { db, addMessage } from '@/lib/db'
+import { addMessage } from '@/lib/db'
 import { useAppStore } from '@/lib/store'
-
-// Radix Popover requires ResizeObserver
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-global.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 // We need to import the component after setting up mocks
 import { UsageSummary } from '@/components/UsageSummary'
@@ -40,13 +33,11 @@ beforeEach(async () => {
     selectedModels: defaultModels,
     streamingStatus: { claude: false, chatgpt: false, gemini: false },
   })
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 /** Helper to open the popover by clicking the trigger button. */

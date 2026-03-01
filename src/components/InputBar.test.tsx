@@ -15,20 +15,19 @@ import 'fake-indexeddb/auto'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { InputBar } from '@/components/InputBar'
-import { db, updateSettings } from '@/lib/db'
+import { updateSettings } from '@/lib/db'
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 const mockOnSend = vi.fn()
 const mockOnCrossFeed = vi.fn()
 
 beforeEach(async () => {
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
   vi.clearAllMocks()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 describe('InputBar', () => {

@@ -17,6 +17,7 @@ import type { UIMessage } from 'ai'
 import { getMessageText, useProviderChat } from '@/hooks/useProviderChat'
 import { useAppStore } from '@/lib/store'
 import { db, addMessage } from '@/lib/db'
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 // Track mock state that the mock useChat will use
 let mockMessages: UIMessage[] = []
@@ -75,14 +76,12 @@ beforeEach(async () => {
   mockError = undefined
   capturedOnFinish = undefined
   useAppStore.setState(defaultStoreState)
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
   vi.clearAllMocks()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 // ---------------------------------------------------------------------------

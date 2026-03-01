@@ -36,6 +36,7 @@ import {
   getNextCrossFeedRound,
 } from '@/lib/crossfeed'
 import { db } from '@/lib/db'
+import { PROVIDERS } from '@/lib/models'
 import { generateTitle } from '@/lib/utils'
 
 function App() {
@@ -113,9 +114,8 @@ function App() {
 
       // Check each provider for at least one assistant message.
       // Use count queries for efficiency (no need to load full messages).
-      const providers = ['claude', 'chatgpt', 'gemini'] as const
       const counts = await Promise.all(
-        providers.map((p) =>
+        PROVIDERS.map((p) =>
           db.messages
             .where('[conversationId+provider+timestamp]')
             .between(

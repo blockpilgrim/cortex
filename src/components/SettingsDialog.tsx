@@ -31,12 +31,14 @@ import {
 } from '@/components/ui/select'
 import { db, updateSettings } from '@/lib/db'
 import type { Provider } from '@/lib/db/types'
-import { MODEL_OPTIONS, PROVIDER_COLORS, PROVIDER_LABELS } from '@/lib/models'
+import {
+  MODEL_OPTIONS,
+  PROVIDER_COLORS,
+  PROVIDER_LABELS,
+  PROVIDERS,
+} from '@/lib/models'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
-
-/** The three providers in display order. */
-const PROVIDERS: Provider[] = ['claude', 'chatgpt', 'gemini']
 
 export function SettingsDialog() {
   const [open, setOpen] = useState(false)

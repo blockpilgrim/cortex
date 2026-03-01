@@ -20,13 +20,12 @@ import type { Message, Provider, TokenCount } from '@/lib/db/types'
 import {
   PROVIDER_COLORS,
   PROVIDER_LABELS,
+  PROVIDERS,
   getModelDisplayName,
 } from '@/lib/models'
 import { calculateTotalCost, formatCost, formatTokenCount } from '@/lib/pricing'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
-
-const PROVIDERS: Provider[] = ['claude', 'chatgpt', 'gemini']
 
 /** Aggregated usage stats for a provider within a scope. */
 interface ProviderUsage {

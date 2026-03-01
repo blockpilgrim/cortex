@@ -24,14 +24,7 @@ import userEvent from '@testing-library/user-event'
 import { ConversationSidebar } from '@/components/ConversationSidebar'
 import { useAppStore } from '@/lib/store'
 import { db, createConversation } from '@/lib/db'
-
-// Radix ScrollArea requires ResizeObserver
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-global.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 const modelConfig = {
   claude: 'claude-sonnet-4-6',
@@ -45,13 +38,11 @@ beforeEach(async () => {
     sidebarOpen: true,
     streamingStatus: { claude: false, chatgpt: false, gemini: false },
   })
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 /**
