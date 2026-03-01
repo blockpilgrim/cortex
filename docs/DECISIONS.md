@@ -66,3 +66,29 @@ Significant decisions made during implementation. Referenced by CLAUDE.md's Comp
 **Decision:** Use pure utility functions in `src/lib/crossfeed.ts` for message construction, and extend the existing `send(text, options?)` signature with an optional `SendOptions` parameter for metadata. Orchestration lives in `App.tsx`'s `handleCrossFeed` callback. Cross-feed visual state tracked via a `Set<string>` of UIMessage IDs in `useProviderChat`.
 
 **Consequence:** Cross-feed message construction is trivially testable (24 pure function tests). The `send()` API remains backward-compatible. The `Set<string>` tracking grows within a session but resets on conversation switch and rebuilds from Dexie on load. No new hooks or classes needed — cross-feed is an orchestration concern in the parent, not a per-column concern.
+
+---
+
+## 006: API-only token counting (no client-side tiktoken)
+
+**Date:** 2026-03-01
+**Phase:** 10
+
+**Context:** BUILD-STRATEGY.md Decision #4 planned a "hybrid approach" combining API response token counts with client-side `js-tiktoken` for pre-send estimation. Phase 10 implemented token usage capture from API responses via the `messageMetadata` callback in the proxy's `toUIMessageStreamResponse`.
+
+**Decision:** Use API response token counts exclusively. Do not install `js-tiktoken`. Token counts are extracted from the `finish` stream event and sent to the client as `UIMessage.metadata.usage`.
+
+**Consequence:** No pre-send token estimation (user cannot see "this message will cost approximately X" before sending). Token counts are only available after the response completes. This keeps the bundle smaller (~2KB saved from tiktoken encoding data) and avoids complexity from provider-specific tokenizer differences. Pre-send estimation can be added later if needed.
+
+---
+
+## 007: Cost estimates use currently-selected model
+
+**Date:** 2026-03-01
+**Phase:** 10
+
+**Context:** The `UsageSummary` component calculates costs using `selectedModels[provider]` from the Zustand store. If a user switches models mid-conversation (e.g., from Opus to Haiku), all historical costs are recalculated at the new model's price. The `Message` type does not store which model generated it.
+
+**Decision:** Accept this limitation for the MVP. Document it in the UI with "Costs estimated using currently selected models." The correct long-term fix is to add a `model: string` field to the `Message` schema and use it for cost lookups, but this requires a Dexie schema migration and touches many persistence paths.
+
+**Consequence:** Cost estimates may be inaccurate when users switch models within a conversation. This is a known limitation documented in the UI and in this decision log. Adding `model` to `Message` is deferred to a future phase.

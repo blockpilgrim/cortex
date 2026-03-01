@@ -54,14 +54,16 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 ### Performance Strategy
 - Each model column wrapped in `React.memo` for stream isolation
 - RAF buffering if needed for token rendering (60+ re-renders/sec from 3 streams)
-- Lazy-load tiktoken, export logic
+- Lazy-load export logic, settings panel (deferred to Phase 12)
+- Popover-gated queries: `UsageSummary` only runs Dexie queries when open
+- Token counts from API response metadata (no client-side tiktoken)
 - Bundle target: < 200 KB gzipped
 
 ## Implementation Phases
 
 13 sequential phases defined in `docs/IMPLEMENTATION-PLAN.md`. Key dependency: Phases 2-3 (data layer, app shell) and Phase 4 (proxy) can run in parallel. Phases 7-9 parallelize after Phase 6.
 
-**Current status:** Phase 9 complete. Full conversation lifecycle is implemented. `ConversationSidebar` has `ConversationItem` components with hover-reveal rename (pencil icon, inline Input, Enter/blur confirms, Escape/X cancels) and delete (trash icon, AlertDialog confirmation, cascade deletes messages). Stale closure in delete handler fixed via `useAppStore.getState()`. `App.tsx` restores `modelConfig` from conversation record on switch. `generateTitle()` in `src/lib/utils.ts` truncates at 60 chars on word boundary with whitespace collapsing. All prior features (tri-model streaming, settings, cross-feed) remain fully functional.
+**Current status:** Phase 10 complete. Token usage and cost display fully implemented. Proxy extracts token counts via `messageMetadata` in `toUIMessageStreamResponse` (finish event). Client reads `UIMessage.metadata.usage` in `useProviderChat`'s `onFinish`, persists to Dexie, and tracks in `tokenCountMap` state. `MessageBubble` shows per-message token counts with hover tooltip for input/output breakdown. `UsageSummary` Popover in `TopBar` shows per-conversation and overall usage with cost estimates. `src/lib/pricing.ts` has `MODEL_PRICING` table and pure cost calculation/formatting functions. Queries gated behind popover open state for performance. Known limitation: costs use currently-selected model, not the model used at message time.
 
 ## Workflow: /implement Skill
 

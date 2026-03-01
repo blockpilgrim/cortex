@@ -273,6 +273,78 @@ describe('error mapping', () => {
   })
 })
 
+describe('messageMetadata callback', () => {
+  type MetadataPart = { type: string; totalUsage?: Record<string, number> }
+  type MetadataCallback = (opts: { part: MetadataPart }) => unknown
+
+  /** Set up streamText mock and make a request, returning the captured messageMetadata callback. */
+  async function captureMessageMetadata(): Promise<MetadataCallback> {
+    let captured: MetadataCallback | undefined
+    const mockToUIStream = vi.fn(
+      (opts: { messageMetadata?: MetadataCallback }) => {
+        captured = opts.messageMetadata
+        return new Response('stream')
+      },
+    )
+    mockStreamText.mockReturnValue({
+      toUIMessageStreamResponse: mockToUIStream,
+    })
+
+    const context = createMockContext(validBody())
+    await onRequestPost(
+      context as unknown as Parameters<typeof onRequestPost>[0],
+    )
+
+    expect(captured).toBeDefined()
+    return captured!
+  }
+
+  it('passes messageMetadata to toUIMessageStreamResponse', async () => {
+    await captureMessageMetadata()
+  })
+
+  it('extracts token usage from finish part', async () => {
+    const messageMetadata = await captureMessageMetadata()
+
+    const result = messageMetadata({
+      part: {
+        type: 'finish',
+        totalUsage: { inputTokens: 500, outputTokens: 1200 },
+      },
+    })
+    expect(result).toEqual({
+      usage: {
+        inputTokens: 500,
+        outputTokens: 1200,
+      },
+    })
+  })
+
+  it('returns undefined for non-finish parts', async () => {
+    const messageMetadata = await captureMessageMetadata()
+
+    expect(messageMetadata({ part: { type: 'text-delta' } })).toBeUndefined()
+    expect(messageMetadata({ part: { type: 'step-start' } })).toBeUndefined()
+  })
+
+  it('handles zero token counts in finish part', async () => {
+    const messageMetadata = await captureMessageMetadata()
+
+    const result = messageMetadata({
+      part: {
+        type: 'finish',
+        totalUsage: { inputTokens: 0, outputTokens: 0 },
+      },
+    })
+    expect(result).toEqual({
+      usage: {
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+    })
+  })
+})
+
 describe('onError callback', () => {
   it('returns user-friendly message for known errors', async () => {
     let capturedOnError: ((err: unknown) => string) | undefined

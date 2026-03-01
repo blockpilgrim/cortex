@@ -241,4 +241,97 @@ describe('MessageBubble', () => {
       expect(bubble.className).toContain('border-dashed')
     })
   })
+
+  describe('token count display', () => {
+    it('shows token count on assistant messages when tokenCount is provided', () => {
+      render(
+        <MessageBubble
+          role="assistant"
+          content="Response"
+          tokenCount={{ input: 100, output: 200 }}
+        />,
+      )
+      // Total: 300 tokens, formatted as "300 tokens"
+      expect(screen.getByText('300 tokens')).toBeInTheDocument()
+    })
+
+    it('does not show token count on assistant messages when tokenCount is null', () => {
+      render(
+        <MessageBubble
+          role="assistant"
+          content="Response"
+          tokenCount={null}
+        />,
+      )
+      expect(screen.queryByText(/tokens/)).not.toBeInTheDocument()
+    })
+
+    it('does not show token count on assistant messages when tokenCount is undefined', () => {
+      render(<MessageBubble role="assistant" content="Response" />)
+      expect(screen.queryByText(/tokens/)).not.toBeInTheDocument()
+    })
+
+    it('does not show token count on user messages even if tokenCount is provided', () => {
+      render(
+        <MessageBubble
+          role="user"
+          content="User message"
+          tokenCount={{ input: 500, output: 1000 }}
+        />,
+      )
+      expect(screen.queryByText(/tokens/)).not.toBeInTheDocument()
+    })
+
+    it('shows title attribute with input/output breakdown', () => {
+      render(
+        <MessageBubble
+          role="assistant"
+          content="Response"
+          tokenCount={{ input: 1234, output: 5678 }}
+        />,
+      )
+      const tokenSpan = screen.getByText(/tokens/)
+      expect(tokenSpan).toHaveAttribute(
+        'title',
+        'Input: 1,234 | Output: 5,678',
+      )
+    })
+
+    it('formats large token counts correctly', () => {
+      render(
+        <MessageBubble
+          role="assistant"
+          content="Response"
+          tokenCount={{ input: 5000, output: 10000 }}
+        />,
+      )
+      // Total: 15000, formatTokenCount(15000) = "15K"
+      expect(screen.getByText('15K tokens')).toBeInTheDocument()
+    })
+
+    it('formats small token counts without abbreviation', () => {
+      render(
+        <MessageBubble
+          role="assistant"
+          content="Response"
+          tokenCount={{ input: 50, output: 30 }}
+        />,
+      )
+      // Total: 80
+      expect(screen.getByText('80 tokens')).toBeInTheDocument()
+    })
+
+    it('shows token count alongside timestamp when both are present', () => {
+      render(
+        <MessageBubble
+          role="assistant"
+          content="Response"
+          timestamp="2026-02-28T14:30:00.000Z"
+          tokenCount={{ input: 100, output: 200 }}
+        />,
+      )
+      expect(screen.getByRole('time')).toBeInTheDocument()
+      expect(screen.getByText('300 tokens')).toBeInTheDocument()
+    })
+  })
 })

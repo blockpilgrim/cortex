@@ -489,6 +489,301 @@ describe('useProviderChat', () => {
     })
   })
 
+  describe('token count extraction on onFinish', () => {
+    it('extracts token count from message metadata usage', async () => {
+      renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-tokens-1',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Response with tokens' }],
+            metadata: {
+              usage: {
+                inputTokens: 150,
+                outputTokens: 300,
+              },
+            },
+          } as UIMessage,
+        })
+      })
+
+      // Verify token count was persisted to Dexie
+      const messages = await db.messages.toArray()
+      const assistantMsg = messages.find((m) => m.role === 'assistant')
+      expect(assistantMsg).toBeDefined()
+      expect(assistantMsg!.tokenCount).toEqual({ input: 150, output: 300 })
+    })
+
+    it('persists tokenCount as null when metadata has no usage', async () => {
+      renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-no-tokens',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Response without tokens' }],
+            // No metadata
+          },
+        })
+      })
+
+      const messages = await db.messages.toArray()
+      const assistantMsg = messages.find((m) => m.role === 'assistant')
+      expect(assistantMsg).toBeDefined()
+      expect(assistantMsg!.tokenCount).toBeNull()
+    })
+
+    it('persists tokenCount as null when metadata is undefined', async () => {
+      renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-undef-meta',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Response' }],
+            metadata: undefined,
+          } as UIMessage,
+        })
+      })
+
+      const messages = await db.messages.toArray()
+      const assistantMsg = messages.find((m) => m.role === 'assistant')
+      expect(assistantMsg).toBeDefined()
+      expect(assistantMsg!.tokenCount).toBeNull()
+    })
+
+    it('handles partial usage metadata (only inputTokens)', async () => {
+      renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-partial',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Partial usage' }],
+            metadata: {
+              usage: {
+                inputTokens: 200,
+                // outputTokens missing
+              },
+            },
+          } as UIMessage,
+        })
+      })
+
+      const messages = await db.messages.toArray()
+      const assistantMsg = messages.find((m) => m.role === 'assistant')
+      expect(assistantMsg).toBeDefined()
+      expect(assistantMsg!.tokenCount).toEqual({ input: 200, output: 0 })
+    })
+
+    it('handles partial usage metadata (only outputTokens)', async () => {
+      renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-partial-out',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Partial output' }],
+            metadata: {
+              usage: {
+                outputTokens: 500,
+                // inputTokens missing
+              },
+            },
+          } as UIMessage,
+        })
+      })
+
+      const messages = await db.messages.toArray()
+      const assistantMsg = messages.find((m) => m.role === 'assistant')
+      expect(assistantMsg).toBeDefined()
+      expect(assistantMsg!.tokenCount).toEqual({ input: 0, output: 500 })
+    })
+
+    it('updates tokenCountMap state after onFinish with token data', async () => {
+      const { result } = renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-map-test',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'Token map test' }],
+            metadata: {
+              usage: {
+                inputTokens: 100,
+                outputTokens: 200,
+              },
+            },
+          } as UIMessage,
+        })
+      })
+
+      // The tokenCountMap should contain the entry
+      expect(result.current.tokenCountMap.get('msg-map-test')).toEqual({
+        input: 100,
+        output: 200,
+      })
+    })
+
+    it('does not update tokenCountMap when there is no token data', async () => {
+      const { result } = renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      expect(capturedOnFinish).toBeDefined()
+      await act(async () => {
+        await capturedOnFinish!({
+          message: {
+            id: 'msg-no-map',
+            role: 'assistant',
+            parts: [{ type: 'text', text: 'No token data' }],
+          },
+        })
+      })
+
+      expect(result.current.tokenCountMap.has('msg-no-map')).toBe(false)
+    })
+  })
+
+  describe('token count seeding from Dexie', () => {
+    it('populates tokenCountMap when seeding messages from Dexie', async () => {
+      // Add a message with token count to Dexie
+      await addMessage({
+        conversationId: 1,
+        provider: 'claude',
+        role: 'assistant',
+        content: 'Response with tokens',
+        tokenCount: { input: 250, output: 500 },
+      })
+
+      const { result } = renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      await waitFor(() => {
+        expect(mockSetMessages).toHaveBeenCalled()
+      })
+
+      // The tokenCountMap should be populated from the seeded messages
+      expect(result.current.tokenCountMap.size).toBe(1)
+      const firstEntry = Array.from(result.current.tokenCountMap.values())[0]
+      expect(firstEntry).toEqual({ input: 250, output: 500 })
+    })
+
+    it('does not include messages without tokenCount in tokenCountMap', async () => {
+      await addMessage({
+        conversationId: 1,
+        provider: 'claude',
+        role: 'assistant',
+        content: 'Response without tokens',
+        // tokenCount defaults to null
+      })
+
+      const { result } = renderHook(() =>
+        useProviderChat({
+          provider: 'claude',
+          conversationId: 1,
+          model: 'claude-sonnet-4-20250514',
+        }),
+      )
+
+      await waitFor(() => {
+        expect(mockSetMessages).toHaveBeenCalled()
+      })
+
+      expect(result.current.tokenCountMap.size).toBe(0)
+    })
+
+    it('clears tokenCountMap when conversationId becomes null', async () => {
+      // Seed with token data first
+      await addMessage({
+        conversationId: 1,
+        provider: 'claude',
+        role: 'assistant',
+        content: 'Response',
+        tokenCount: { input: 100, output: 200 },
+      })
+
+      const { result, rerender } = renderHook(
+        ({ conversationId }: { conversationId: number | null }) =>
+          useProviderChat({
+            provider: 'claude',
+            conversationId,
+            model: 'claude-sonnet-4-20250514',
+          }),
+        { initialProps: { conversationId: 1 as number | null } },
+      )
+
+      await waitFor(() => {
+        expect(result.current.tokenCountMap.size).toBe(1)
+      })
+
+      // Switch to null conversation
+      rerender({ conversationId: null })
+
+      await waitFor(() => {
+        expect(result.current.tokenCountMap.size).toBe(0)
+      })
+    })
+  })
+
   describe('return values', () => {
     it('exposes isLoading derived from status', () => {
       mockStatus = 'ready'

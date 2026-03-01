@@ -11,6 +11,7 @@ import {
   formatCost,
   formatTokenCount,
 } from '@/lib/pricing'
+import { MODEL_OPTIONS } from '@/lib/models'
 
 describe('MODEL_PRICING', () => {
   it('has pricing for all Claude models', () => {
@@ -29,6 +30,15 @@ describe('MODEL_PRICING', () => {
   it('has pricing for all Gemini models', () => {
     expect(MODEL_PRICING['gemini-2.0-flash']).toBeDefined()
     expect(MODEL_PRICING['gemini-2.5-pro-preview-06-05']).toBeDefined()
+  })
+
+  it('has pricing for every model in MODEL_OPTIONS', () => {
+    const allModelIds = Object.values(MODEL_OPTIONS)
+      .flat()
+      .map((opt) => opt.id)
+    for (const modelId of allModelIds) {
+      expect(MODEL_PRICING[modelId], `Missing pricing for ${modelId}`).toBeDefined()
+    }
   })
 
   it('has positive prices for all models', () => {
@@ -173,7 +183,12 @@ describe('formatTokenCount', () => {
     expect(formatTokenCount(10000)).toBe('10K')
     expect(formatTokenCount(50000)).toBe('50K')
     expect(formatTokenCount(100000)).toBe('100K')
-    expect(formatTokenCount(999999)).toBe('1000K')
+    expect(formatTokenCount(999499)).toBe('999K')
+  })
+
+  it('formats values near 1M as M not K', () => {
+    expect(formatTokenCount(999500)).toBe('1.0M')
+    expect(formatTokenCount(999999)).toBe('1.0M')
   })
 
   it('formats millions with one decimal place', () => {

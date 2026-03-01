@@ -8,6 +8,7 @@
 
 import { useLiveQuery } from 'dexie-react-hooks'
 import { BarChart3Icon } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -48,7 +49,7 @@ function aggregateByProvider(messages: Message[]): ProviderUsage[] {
   }
 
   for (const msg of messages) {
-    if (msg.role !== 'assistant' || !msg.tokenCount) continue
+    if (!msg.tokenCount) continue
     const usage = map.get(msg.provider)
     if (usage) {
       usage.inputTokens += msg.tokenCount.input
@@ -169,38 +170,10 @@ function UsageSection({
 }
 
 export function UsageSummary() {
-  const activeConversationId = useAppStore((s) => s.activeConversationId)
-  const selectedModels = useAppStore((s) => s.selectedModels)
-
-  // Query messages for the active conversation
-  const conversationMessages = useLiveQuery(
-    async () => {
-      if (activeConversationId === null) return [] as Message[]
-      return db.messages
-        .where('conversationId')
-        .equals(activeConversationId)
-        .toArray()
-    },
-    [activeConversationId],
-    [] as Message[],
-  )
-
-  // Query all messages across all conversations
-  const allMessages = useLiveQuery(
-    async () => {
-      return db.messages.toArray()
-    },
-    [],
-    [] as Message[],
-  )
-
-  // Check if there is any usage data at all
-  const hasAnyUsage = allMessages.some(
-    (m) => m.role === 'assistant' && m.tokenCount,
-  )
+  const [open, setOpen] = useState(false)
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -212,32 +185,78 @@ export function UsageSummary() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72" align="end" sideOffset={4}>
-        <div className="space-y-3">
-          <h3 className="text-foreground text-sm font-semibold">Token Usage</h3>
-
-          {!hasAnyUsage ? (
-            <p className="text-muted-foreground text-xs">
-              Token usage will appear here after you send messages.
-            </p>
-          ) : (
-            <>
-              {activeConversationId !== null && (
-                <UsageSection
-                  title="Current Conversation"
-                  messages={conversationMessages}
-                  selectedModels={selectedModels}
-                />
-              )}
-
-              <UsageSection
-                title="All Conversations"
-                messages={allMessages}
-                selectedModels={selectedModels}
-              />
-            </>
-          )}
-        </div>
+        {open && <UsagePopoverContent />}
       </PopoverContent>
     </Popover>
+  )
+}
+
+/**
+ * Inner content of the usage popover. Only mounted when the popover is open
+ * to avoid running Dexie queries on every message write while closed.
+ */
+function UsagePopoverContent() {
+  const activeConversationId = useAppStore((s) => s.activeConversationId)
+  const selectedModels = useAppStore((s) => s.selectedModels)
+
+  // Query assistant messages for the active conversation (only those with token data)
+  const conversationMessages = useLiveQuery(
+    async () => {
+      if (activeConversationId === null) return [] as Message[]
+      return db.messages
+        .where('conversationId')
+        .equals(activeConversationId)
+        .filter((m) => m.role === 'assistant' && m.tokenCount !== null)
+        .toArray()
+    },
+    [activeConversationId],
+    [] as Message[],
+  )
+
+  // Query all assistant messages with token data across all conversations.
+  // Note: This filters in JS since 'role' is not indexed. For large datasets,
+  // consider an incremental usage summary table.
+  const allMessages = useLiveQuery(
+    async () => {
+      return db.messages
+        .filter((m) => m.role === 'assistant' && m.tokenCount !== null)
+        .toArray()
+    },
+    [],
+    [] as Message[],
+  )
+
+  const hasAnyUsage = allMessages.length > 0
+
+  return (
+    <div className="space-y-3">
+      <h3 className="text-foreground text-sm font-semibold">Token Usage</h3>
+
+      <p className="text-muted-foreground text-[10px]">
+        Costs estimated using currently selected models.
+      </p>
+
+      {!hasAnyUsage ? (
+        <p className="text-muted-foreground text-xs">
+          Token usage will appear here after you send messages.
+        </p>
+      ) : (
+        <>
+          {activeConversationId !== null && (
+            <UsageSection
+              title="Current Conversation"
+              messages={conversationMessages}
+              selectedModels={selectedModels}
+            />
+          )}
+
+          <UsageSection
+            title="All Conversations"
+            messages={allMessages}
+            selectedModels={selectedModels}
+          />
+        </>
+      )}
+    </div>
   )
 }

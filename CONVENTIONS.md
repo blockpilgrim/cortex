@@ -15,6 +15,7 @@ src/
   lib/           # Shared utilities and core modules
     db/          # Data layer (Dexie schema, types, data access functions)
     models.ts    # Model definitions, display names, provider constants
+    pricing.ts   # Token pricing table and cost calculation (pure functions)
     crossfeed.ts # Cross-feed message construction utilities (pure functions)
     store.ts     # Zustand store (ephemeral UI state)
     utils.ts     # Utility functions (cn(), helpers)
@@ -427,12 +428,13 @@ vi.mock('@ai-sdk/anthropic', () => ({ createAnthropic: mockCreateAnthropic }))
 - `DefaultChatTransport` created once via `useMemo(() => ..., [])`, reads dynamic values (provider, model, API key) through refs at request time
 - `prepareSendMessagesRequest` callback reads API key from Dexie settings, converts `UIMessage` parts to `{role, content}` for the proxy
 - Persistence sync: user messages saved to Dexie on `send()`, assistant messages on `onFinish`
-- Message seeding: loads from Dexie when `conversationId` changes, clears on null
+- Token usage extraction: reads `UIMessage.metadata.usage` in `onFinish`, persists to Dexie, updates `tokenCountMap` state
+- Message seeding: loads from Dexie when `conversationId` changes, clears on null; also populates `crossFeedIds` and `tokenCountMap` from Dexie records
 - Streaming status synced to Zustand store via `useEffect` for cross-component reactivity
 
 **Example**:
 ```tsx
-const { messages, send, isLoading, error, stop, clearError, crossFeedIds } = useProviderChat({
+const { messages, send, isLoading, error, stop, clearError, crossFeedIds, tokenCountMap } = useProviderChat({
   provider: 'claude',
   conversationId: activeConversationId,
   model: 'claude-sonnet-4-20250514',
@@ -737,3 +739,65 @@ const handleDelete = useCallback(async (id: number) => {
 ```
 
 **Why**: When focus leaves an input, `onBlur` fires before `onClick` on a sibling button. Without `preventDefault` on `mouseDown`, clicking cancel would trigger the blur handler (which confirms) before the cancel handler runs. This pattern ensures the user's intent (cancel) takes priority.
+
+---
+
+## Token Usage Extraction Pipeline (Proxy → Client)
+
+**When to use**: When structured metadata needs to flow from the Cloudflare proxy to the client alongside a streamed response.
+
+- Proxy: Use `messageMetadata` callback in `toUIMessageStreamResponse()` to extract data from stream events (e.g., `finish` event for token usage)
+- Client: Read `UIMessage.metadata` in `useProviderChat`'s `onFinish` callback
+- Persist to Dexie and update local state (e.g., `tokenCountMap`)
+
+**Example**:
+```ts
+// Proxy (functions/api/chat.ts)
+result.toUIMessageStreamResponse({
+  messageMetadata: ({ part }) => {
+    if (part.type === 'finish') {
+      return { usage: { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 } }
+    }
+    return undefined
+  },
+})
+
+// Client (useProviderChat.ts onFinish)
+const metadata = message.metadata as { usage?: { inputTokens?: number; outputTokens?: number } } | undefined
+const tokenCount = metadata?.usage ? { input: metadata.usage.inputTokens ?? 0, output: metadata.usage.outputTokens ?? 0 } : null
+```
+
+**Why**: The AI SDK's `messageMetadata` callback is the standard way to send structured data alongside a stream. This avoids custom stream parsing or separate API calls. The pattern is reusable for any metadata (e.g., model version, safety flags).
+
+---
+
+## Popover-Gated Queries
+
+**When to use**: When a Popover (or similar overlay) displays data from expensive queries that should not run continuously.
+
+- Control the Popover with `[open, setOpen] = useState(false)` and `<Popover open={open} onOpenChange={setOpen}>`
+- Render the query-executing content only when open: `{open && <PopoverContent />}`
+- The inner component mounts/unmounts with the popover, so `useLiveQuery` subscriptions are active only while visible
+
+**Example**:
+```tsx
+function UsageSummary() {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild><Button>Usage</Button></PopoverTrigger>
+      <PopoverContent>
+        {open && <UsagePopoverContent />}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function UsagePopoverContent() {
+  // useLiveQuery only runs while popover is open
+  const data = useLiveQuery(() => db.messages.toArray(), [])
+  // ...
+}
+```
+
+**Why**: `useLiveQuery` re-subscribes to Dexie table changes. Without gating, every message write triggers query re-evaluation even when the popover is closed. Conditional rendering ensures queries only run when the user actually views the data.

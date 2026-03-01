@@ -108,6 +108,6 @@ export function formatCost(usd: number): string {
 export function formatTokenCount(count: number): string {
   if (count < 1000) return String(count)
   if (count < 10_000) return `${(count / 1000).toFixed(1)}K`
-  if (count < 1_000_000) return `${Math.round(count / 1000)}K`
+  if (count < 999_500) return `${Math.round(count / 1000)}K`
   return `${(count / 1_000_000).toFixed(1)}M`
 }
