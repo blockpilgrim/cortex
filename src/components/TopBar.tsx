@@ -1,9 +1,10 @@
 /**
- * Top bar with app title, settings, new conversation button, and sidebar toggle.
+ * Top bar with app title, settings, export, new conversation button, and sidebar toggle.
  */
 
 import { MenuIcon, PlusIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ExportMenu } from '@/components/ExportMenu'
 import { SettingsDialog } from '@/components/SettingsDialog'
 import { UsageSummary } from '@/components/UsageSummary'
 import { useAppStore } from '@/lib/store'
@@ -32,6 +33,8 @@ export function TopBar({ onNewConversation }: TopBarProps) {
       </h1>
 
       <div className="flex-1" />
+
+      <ExportMenu />
 
       <UsageSummary />
 

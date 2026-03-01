@@ -17,6 +17,8 @@ src/
     models.ts    # Model definitions, display names, provider constants
     pricing.ts   # Token pricing table and cost calculation (pure functions)
     crossfeed.ts # Cross-feed message construction utilities (pure functions)
+    export.ts    # Export serialization to JSON and Markdown (pure functions)
+    download.ts  # Browser file download utility (Blob + object URL)
     store.ts     # Zustand store (ephemeral UI state)
     utils.ts     # Utility functions (cn(), helpers)
   hooks/         # Custom React hooks
@@ -801,3 +803,54 @@ function UsagePopoverContent() {
 ```
 
 **Why**: `useLiveQuery` re-subscribes to Dexie table changes. Without gating, every message write triggers query re-evaluation even when the popover is closed. Conditional rendering ensures queries only run when the user actually views the data.
+
+---
+
+## Lazy-Loaded Feature Modules via Dynamic Import
+
+**When to use**: When a feature module (export, analytics, etc.) is only needed on explicit user action and should not bloat the main bundle.
+
+- Use dynamic `import()` at the point of invocation (e.g., inside an event handler)
+- Vite automatically code-splits dynamic imports into separate chunks
+- Load multiple modules in parallel with `Promise.all([import(...), import(...)])`
+
+**Example**:
+```ts
+async function performExport() {
+  const [exportModule, downloadModule] = await Promise.all([
+    import('@/lib/export'),
+    import('@/lib/download'),
+  ])
+  const content = exportModule.exportConversationToJson(data)
+  downloadModule.downloadJson(content, filename)
+}
+```
+
+**Why**: Keeps the main bundle small (performance strategy target: < 200 KB gzipped). Export logic (~3 KB combined) is only loaded when the user actually clicks an export action. Vite handles chunk naming and cache-busting automatically.
+
+---
+
+## Pure Functions for Data Transformation
+
+**When to use**: For any feature that transforms data (export, cross-feed, pricing, etc.) without side effects.
+
+- Keep transformation logic in `src/lib/*.ts` as pure functions
+- Separate I/O (Dexie reads, DOM manipulation) from data transformation
+- The calling component or handler orchestrates I/O and passes data to pure functions
+- Pure functions accept typed inputs and return typed outputs -- no global state or side effects
+
+**Example** (from export):
+```ts
+// Pure function -- no side effects, trivially testable
+export function exportConversationToJson(data: ExportableConversation): string {
+  return JSON.stringify(toConversationJson(data), null, 2)
+}
+
+// Orchestration in the component reads from Dexie, calls pure function, triggers download
+const conversation = await getConversation(id)
+const messages = await getMessagesByConversation(id)
+const content = exportConversationToJson({ conversation, messages })
+downloadJson(content, filename)
+```
+
+**Why**: Consistent with the established patterns from `crossfeed.ts` and `pricing.ts`. Pure functions are the most testable unit -- no mocking needed. I/O orchestration stays in the component where it is visible and debuggable.

@@ -37,7 +37,10 @@ describe('MODEL_PRICING', () => {
       .flat()
       .map((opt) => opt.id)
     for (const modelId of allModelIds) {
-      expect(MODEL_PRICING[modelId], `Missing pricing for ${modelId}`).toBeDefined()
+      expect(
+        MODEL_PRICING[modelId],
+        `Missing pricing for ${modelId}`,
+      ).toBeDefined()
     }
   })
 

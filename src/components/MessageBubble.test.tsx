@@ -257,11 +257,7 @@ describe('MessageBubble', () => {
 
     it('does not show token count on assistant messages when tokenCount is null', () => {
       render(
-        <MessageBubble
-          role="assistant"
-          content="Response"
-          tokenCount={null}
-        />,
+        <MessageBubble role="assistant" content="Response" tokenCount={null} />,
       )
       expect(screen.queryByText(/tokens/)).not.toBeInTheDocument()
     })
@@ -291,10 +287,7 @@ describe('MessageBubble', () => {
         />,
       )
       const tokenSpan = screen.getByText(/tokens/)
-      expect(tokenSpan).toHaveAttribute(
-        'title',
-        'Input: 1,234 | Output: 5,678',
-      )
+      expect(tokenSpan).toHaveAttribute('title', 'Input: 1,234 | Output: 5,678')
     })
 
     it('formats large token counts correctly', () => {

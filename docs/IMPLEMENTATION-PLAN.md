@@ -302,7 +302,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 11: Export
+- [x] ## Phase 11: Export
 
 **Goal**: User can export conversations as JSON or Markdown files.
 

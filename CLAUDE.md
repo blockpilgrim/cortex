@@ -54,7 +54,7 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 ### Performance Strategy
 - Each model column wrapped in `React.memo` for stream isolation
 - RAF buffering if needed for token rendering (60+ re-renders/sec from 3 streams)
-- Lazy-load export logic, settings panel (deferred to Phase 12)
+- Export logic lazy-loaded via dynamic import (code-split); settings panel lazy-load deferred to Phase 12
 - Popover-gated queries: `UsageSummary` only runs Dexie queries when open
 - Token counts from API response metadata (no client-side tiktoken)
 - Bundle target: < 200 KB gzipped
@@ -63,7 +63,7 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 
 13 sequential phases defined in `docs/IMPLEMENTATION-PLAN.md`. Key dependency: Phases 2-3 (data layer, app shell) and Phase 4 (proxy) can run in parallel. Phases 7-9 parallelize after Phase 6.
 
-**Current status:** Phase 10 complete. Token usage and cost display fully implemented. Proxy extracts token counts via `messageMetadata` in `toUIMessageStreamResponse` (finish event). Client reads `UIMessage.metadata.usage` in `useProviderChat`'s `onFinish`, persists to Dexie, and tracks in `tokenCountMap` state. `MessageBubble` shows per-message token counts with hover tooltip for input/output breakdown. `UsageSummary` Popover in `TopBar` shows per-conversation and overall usage with cost estimates. `src/lib/pricing.ts` has `MODEL_PRICING` table and pure cost calculation/formatting functions. Queries gated behind popover open state for performance. Known limitation: costs use currently-selected model, not the model used at message time.
+**Current status:** Phase 11 complete. Export functionality implemented. `src/lib/export.ts` contains pure functions for serializing conversations to JSON and Markdown formats. `src/lib/download.ts` provides Blob + object URL download triggering. `ExportMenu` component in TopBar offers dropdown with current-conversation and all-conversations export in both formats. Export modules are lazy-loaded via dynamic `import()` for bundle performance (confirmed code-split into separate chunks). Export never deletes local data. Previous phases: Token usage (Phase 10), conversation management (Phase 9), cross-feed (Phase 8), settings (Phase 7), tri-model streaming (Phase 6), etc.
 
 ## Workflow: /implement Skill
 
