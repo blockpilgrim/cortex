@@ -16,11 +16,11 @@ import { AlertCircleIcon, LoaderIcon, RefreshCwIcon } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { MessageBubble } from '@/components/MessageBubble'
+import { ProviderLogo } from '@/components/ProviderLogo'
 import { useProviderChat, getMessageText } from '@/hooks/useProviderChat'
 import type { SendOptions } from '@/hooks/useProviderChat'
 import type { Provider } from '@/lib/db/types'
-import { getModelDisplayName, PROVIDER_COLORS } from '@/lib/models'
-import { cn } from '@/lib/utils'
+import { getModelDisplayName } from '@/lib/models'
 import { useAppStore } from '@/lib/store'
 
 interface ModelColumnProps {
@@ -82,16 +82,10 @@ export const ModelColumn = memo(
       >
         {/* Column header */}
         <div className="border-border flex items-center gap-2 border-b px-3 py-2">
-          <div
-            className={cn('h-2 w-2 rounded-full', PROVIDER_COLORS[provider])}
-            aria-hidden="true"
-          />
-          <div className="flex flex-col">
-            <span className="text-foreground text-sm font-medium">{label}</span>
-            <span className="text-muted-foreground text-[11px] leading-tight">
-              {getModelDisplayName(model)}
-            </span>
-          </div>
+          <ProviderLogo provider={provider} />
+          <span className="text-foreground text-sm font-medium">
+            {getModelDisplayName(model)}
+          </span>
           {isLoading && (
             <LoaderIcon
               className="text-muted-foreground h-3 w-3 animate-spin"

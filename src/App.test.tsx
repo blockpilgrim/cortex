@@ -65,9 +65,9 @@ describe('App', () => {
   it('renders the main layout elements', () => {
     render(<App />)
     expect(screen.getByText('Cortex')).toBeInTheDocument()
-    expect(screen.getByText('Claude')).toBeInTheDocument()
-    expect(screen.getByText('ChatGPT')).toBeInTheDocument()
-    expect(screen.getByText('Gemini')).toBeInTheDocument()
+    expect(screen.getByLabelText('Claude conversation')).toBeInTheDocument()
+    expect(screen.getByLabelText('ChatGPT conversation')).toBeInTheDocument()
+    expect(screen.getByLabelText('Gemini conversation')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Send message' }),
     ).toBeInTheDocument()

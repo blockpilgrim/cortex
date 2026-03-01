@@ -55,9 +55,10 @@ afterAll(async () => {
 })
 
 describe('ModelColumn', () => {
-  it('renders the provider label', () => {
+  it('renders the model display name and provider logo', () => {
     render(<ModelColumn provider="claude" label="Claude" />)
-    expect(screen.getByText('Claude')).toBeInTheDocument()
+    expect(screen.getByText('Sonnet 4.6')).toBeInTheDocument()
+    expect(screen.getByLabelText('Claude conversation')).toBeInTheDocument()
   })
 
   it('renders messages from useProviderChat', async () => {

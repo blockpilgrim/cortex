@@ -122,7 +122,7 @@ describe('getModelDisplayName', () => {
     expect(getModelDisplayName('claude-opus-4-6')).toBe('Opus 4.6')
     expect(getModelDisplayName('gpt-5.2')).toBe('GPT-5.2')
     expect(getModelDisplayName('gpt-5.3-codex')).toBe('GPT-5.3 Codex')
-    expect(getModelDisplayName('google/gemini-3.1-pro-preview')).toBe('3.1 Pro')
+    expect(getModelDisplayName('google/gemini-3.1-pro-preview')).toBe('Gemini 3.1 Pro')
   })
 
   it('falls back to raw ID for deprecated model IDs', () => {
