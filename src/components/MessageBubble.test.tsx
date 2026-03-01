@@ -185,7 +185,11 @@ describe('MessageBubble', () => {
   describe('cross-feed indicator', () => {
     it('renders "Cross-feed" label when isCrossFeed is true', () => {
       render(
-        <MessageBubble role="assistant" content="Cross-feed response" isCrossFeed />,
+        <MessageBubble
+          role="assistant"
+          content="Cross-feed response"
+          isCrossFeed
+        />,
       )
       expect(screen.getByText('Cross-feed')).toBeInTheDocument()
     })
@@ -200,7 +204,11 @@ describe('MessageBubble', () => {
 
     it('does not render cross-feed indicator when isCrossFeed is false', () => {
       render(
-        <MessageBubble role="assistant" content="Normal message" isCrossFeed={false} />,
+        <MessageBubble
+          role="assistant"
+          content="Normal message"
+          isCrossFeed={false}
+        />,
       )
       expect(screen.queryByText('Cross-feed')).not.toBeInTheDocument()
     })

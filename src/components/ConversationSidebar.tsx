@@ -342,7 +342,7 @@ function ConversationItem({
         <span className="min-w-0 flex-1 truncate">{conversation.title}</span>
 
         {/* Action buttons -- visible on hover or focus-within for keyboard users */}
-        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           <Button
             variant="ghost"
             size="icon"

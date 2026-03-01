@@ -82,9 +82,9 @@ describe('ConversationSidebar', () => {
       renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('First Chat').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('First Chat').length).toBeGreaterThanOrEqual(
+          1,
+        )
         expect(
           screen.getAllByText('Second Chat').length,
         ).toBeGreaterThanOrEqual(1)
@@ -149,9 +149,7 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('My Chat').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('My Chat').length).toBeGreaterThanOrEqual(1)
       })
 
       const aside = getDesktopAside(container)
@@ -201,9 +199,7 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Old Name').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Old Name').length).toBeGreaterThanOrEqual(1)
       })
 
       const aside = getDesktopAside(container)
@@ -235,9 +231,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Keep This').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Keep This').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -273,9 +269,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Keep This').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Keep This').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -322,9 +318,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Blur Test').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Blur Test').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -359,9 +355,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Non-Empty').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Non-Empty').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -396,9 +392,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Same Title').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Same Title').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -496,9 +492,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('To Delete').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('To Delete').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -531,9 +527,9 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Safe Chat').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Safe Chat').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
@@ -617,17 +613,19 @@ describe('ConversationSidebar', () => {
       const { container } = renderSidebar()
 
       await waitFor(() => {
-        expect(
-          screen.getAllByText('Other Conv').length,
-        ).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Other Conv').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
 
       const aside = getDesktopAside(container)
       // Find the delete button for "Other Conv" -- both items have delete buttons,
       // so we need to find the one within the correct conversation item.
       // The conversation items are role="button" divs with the title text.
-      const otherItem = within(aside)
-        .getAllByRole('button', { name: 'Delete conversation', hidden: true })
+      const otherItem = within(aside).getAllByRole('button', {
+        name: 'Delete conversation',
+        hidden: true,
+      })
 
       // There should be 2 delete buttons (one per conversation).
       // We need the one for "Other Conv". Since conversations are ordered by

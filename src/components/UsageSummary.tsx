@@ -21,11 +21,7 @@ import {
   PROVIDER_LABELS,
   getModelDisplayName,
 } from '@/lib/models'
-import {
-  calculateTotalCost,
-  formatCost,
-  formatTokenCount,
-} from '@/lib/pricing'
+import { calculateTotalCost, formatCost, formatTokenCount } from '@/lib/pricing'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -43,7 +39,12 @@ interface ProviderUsage {
 function aggregateByProvider(messages: Message[]): ProviderUsage[] {
   const map = new Map<Provider, ProviderUsage>()
   for (const p of PROVIDERS) {
-    map.set(p, { provider: p, inputTokens: 0, outputTokens: 0, messageCount: 0 })
+    map.set(p, {
+      provider: p,
+      inputTokens: 0,
+      outputTokens: 0,
+      messageCount: 0,
+    })
   }
 
   for (const msg of messages) {
@@ -119,7 +120,7 @@ function UsageSection({
   if (providerUsages.length === 0) {
     return (
       <div>
-        <h4 className="text-muted-foreground mb-1 text-[10px] font-medium uppercase tracking-wider">
+        <h4 className="text-muted-foreground mb-1 text-[10px] font-medium tracking-wider uppercase">
           {title}
         </h4>
         <p className="text-muted-foreground text-xs">No usage data yet</p>
@@ -142,7 +143,7 @@ function UsageSection({
 
   return (
     <div>
-      <h4 className="text-muted-foreground mb-1 text-[10px] font-medium uppercase tracking-wider">
+      <h4 className="text-muted-foreground mb-1 text-[10px] font-medium tracking-wider uppercase">
         {title}
       </h4>
       {providerUsages.map((u) => (
@@ -210,15 +211,9 @@ export function UsageSummary() {
           <BarChart3Icon className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-72"
-        align="end"
-        sideOffset={4}
-      >
+      <PopoverContent className="w-72" align="end" sideOffset={4}>
         <div className="space-y-3">
-          <h3 className="text-foreground text-sm font-semibold">
-            Token Usage
-          </h3>
+          <h3 className="text-foreground text-sm font-semibold">Token Usage</h3>
 
           {!hasAnyUsage ? (
             <p className="text-muted-foreground text-xs">
