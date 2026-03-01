@@ -279,7 +279,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 10: Token Usage & Cost Display
+- [x] ## Phase 10: Token Usage & Cost Display
 
 **Goal**: User can see token counts and estimated costs.
 
