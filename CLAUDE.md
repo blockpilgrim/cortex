@@ -54,7 +54,7 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 ### Performance Strategy
 - Each model column wrapped in `React.memo` for stream isolation
 - RAF buffering if needed for token rendering (60+ re-renders/sec from 3 streams)
-- Export logic lazy-loaded via dynamic import (code-split); settings panel lazy-load deferred to Phase 12
+- Export logic lazy-loaded via dynamic import (code-split)
 - Popover-gated queries: `UsageSummary` only runs Dexie queries when open
 - Token counts from API response metadata (no client-side tiktoken)
 - Bundle target: < 200 KB gzipped
@@ -63,7 +63,7 @@ Client-orchestrated: SPA reads latest responses from each model, constructs mess
 
 13 sequential phases defined in `docs/IMPLEMENTATION-PLAN.md`. Key dependency: Phases 2-3 (data layer, app shell) and Phase 4 (proxy) can run in parallel. Phases 7-9 parallelize after Phase 6.
 
-**Current status:** Phase 11 complete. Export functionality implemented. `src/lib/export.ts` contains pure functions for serializing conversations to JSON and Markdown formats. `src/lib/download.ts` provides Blob + object URL download triggering. `ExportMenu` component in TopBar offers dropdown with current-conversation and all-conversations export in both formats. Export modules are lazy-loaded via dynamic `import()` for bundle performance (confirmed code-split into separate chunks). Export never deletes local data. Previous phases: Token usage (Phase 10), conversation management (Phase 9), cross-feed (Phase 8), settings (Phase 7), tri-model streaming (Phase 6), etc.
+**Current status:** Phase 12 complete. PWA installable with `vite-plugin-pwa`, manifest, service worker (stale-while-revalidate for assets, network-first for navigation, API routes excluded). Keyboard shortcuts: Cmd/Ctrl+N (new conversation), Cmd/Ctrl+K (search), Enter to send, Shift+Enter for newline. ConversationSearch dialog with fuzzy title filtering and keyboard navigation. InputBar upgraded to textarea for multiline. Skeleton loaders in sidebar. Responsive touch targets (44px min on mobile). Safe-area padding for iOS. CSS fade-in transition on conversation switch. Request deduplication guard. Accessibility: skip-to-content link, semantic landmarks (section, role=log, role=alert, role=status), ARIA labels on all interactive elements, focus management. Previous phases: Export (Phase 11), token usage (Phase 10), conversation management (Phase 9), cross-feed (Phase 8), settings (Phase 7), tri-model streaming (Phase 6), etc.
 
 ## Workflow: /implement Skill
 

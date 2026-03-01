@@ -330,7 +330,7 @@ Each phase produces a working, testable increment. Phases are sequential — lat
 
 ---
 
-- [ ] ## Phase 12: Polish & PWA
+- [x] ## Phase 12: Polish & PWA
 
 **Goal**: Production-quality UX. Installable on mobile.
 
