@@ -222,15 +222,15 @@ There is no separate "Thread" entity. Each model's thread is a filtered view of 
 
 **Trade-off**: The cross-feed payload is larger (includes full responses from two models as input to the third). This increases token costs. No real architectural alternative — this is inherent to the feature.
 
-### 4. Token Counting: Hybrid Approach
+### 4. Token Counting: API Response Only
 
 **Context**: The spec requires displaying token usage and estimated cost.
 
-**Decision**: Use actual token counts from API responses (authoritative). Supplement with client-side estimation via `js-tiktoken` for pre-send previews.
+**Decision**: Use actual token counts from API responses exclusively. No client-side token estimation.
 
-**Rationale**: All three providers return actual token usage in their API responses — this is the only reliable source for billing-accurate numbers. Client-side estimation (via `js-tiktoken` for OpenAI models, rough approximation for Claude/Gemini) is useful for giving users a sense of cost before they send a message, but it will never be exact because providers have different tokenizers and system prompt overhead.
+**Rationale**: All three providers return actual token usage in their API responses — this is the only reliable source for billing-accurate numbers. The proxy extracts token counts via the AI SDK's `messageMetadata` callback on the `finish` stream event. The client reads `UIMessage.metadata.usage` in `onFinish` and persists to Dexie. See `docs/DECISIONS.md` #006 for the full rationale on not using `js-tiktoken`.
 
-**Trade-off**: `js-tiktoken` adds bundle size (~100 KB for encoding data). Worth it for the UX improvement of pre-send estimation. Load the encoding data lazily to avoid impacting initial page load.
+**Trade-off**: No pre-send token estimation. Users see token counts only after a response completes. This is acceptable because the primary value is cost tracking, not pre-send prediction.
 
 ### 5. PWA: Minimal Implementation
 
@@ -255,7 +255,7 @@ Testing should be proportional to risk. For a single-user tool, the highest-risk
 
 | Layer | Tool | Purpose |
 |-------|------|---------|
-| Unit | Vitest | Pure logic: message formatting, token estimation, cost calculation, export serialization |
+| Unit | Vitest | Pure logic: message formatting, cost calculation, export serialization |
 | Component | Vitest + React Testing Library | UI components in isolation: message bubbles, input bar, model selector |
 | Integration | Vitest | Data flow: Dexie read/write, `useChat` ↔ IndexedDB sync, cross-feed message construction |
 | E2E | Playwright | Full flows: send message across 3 models, cross-feed round, export, conversation switching |
@@ -291,7 +291,7 @@ When three AI models stream tokens simultaneously, each firing 20+ chunks per se
 ### Bundle Size
 
 - Target initial JS bundle < 200 KB gzipped
-- Lazy-load: tiktoken encoding data, export logic, settings panel
+- Lazy-load: export logic (via dynamic import, code-split by Vite)
 - Code-split by route if/when routing is added
 
 ### Network
@@ -314,4 +314,4 @@ When three AI models stream tokens simultaneously, each firing 20+ chunks per se
 1. **Absolute minimum latency** — The proxy adds a hop. Direct browser calls to Claude would be ~20ms faster. Not worth the architectural complexity.
 2. **Zero backend** — The spec envisioned a purely client-side app. Reality (CORS) requires a thin proxy. It's stateless and free, so the spirit of the constraint is preserved.
 3. **Framework independence** — Heavy investment in the Vercel AI SDK. If it makes breaking changes, migration work is required. Mitigated by keeping business logic separate from SDK-managed state.
-4. **Bundle minimalism** — React + Tailwind + AI SDK + Dexie + tiktoken is not a tiny bundle. Acceptable for a power-user tool where the first load is a one-time cost and subsequent loads are instant (PWA caching).
+4. **Bundle minimalism** — React + Tailwind + AI SDK + Dexie is not a tiny bundle (~242 KB gzipped). Acceptable for a power-user tool where the first load is a one-time cost and subsequent loads are instant (PWA caching).
