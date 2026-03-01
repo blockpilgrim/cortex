@@ -2,7 +2,7 @@
 
 ## Summary
 
-Reviewed the complete Phase 1 scaffold of the Cortex MVP: a Vite 6 + React 19 + TypeScript project with Tailwind CSS v4, shadcn/ui components, Vitest unit tests, and Playwright E2E configuration. Overall quality is strong. The scaffold is well-structured, conventions are documented, tooling is properly configured, and tests are meaningful for a scaffold phase. There are a few items worth addressing -- one correctness issue with `'use client'` directives, one theme token inconsistency worth understanding, one test file placement that deviates from conventions, and a few minor suggestions.
+Reviewed the complete Phase 1 scaffold of the Quorum MVP: a Vite 6 + React 19 + TypeScript project with Tailwind CSS v4, shadcn/ui components, Vitest unit tests, and Playwright E2E configuration. Overall quality is strong. The scaffold is well-structured, conventions are documented, tooling is properly configured, and tests are meaningful for a scaffold phase. There are a few items worth addressing -- one correctness issue with `'use client'` directives, one theme token inconsistency worth understanding, one test file placement that deviates from conventions, and a few minor suggestions.
 
 ## Files Reviewed
 
@@ -56,7 +56,7 @@ None.
 
 - [ ] **Consider adding `@tailwindcss/vite` to `vitest.config.ts`** -- The Vite config includes the Tailwind CSS plugin, but the Vitest config does not. Currently `css: true` is set in the Vitest config, meaning CSS is processed but without the Tailwind plugin. This is fine for the current tests (they do not assert on computed styles), but if future tests need to verify Tailwind-generated classes or visual rendering, the Tailwind plugin may need to be added to Vitest as well.
 
-- [ ] **Consider replacing the Vite favicon reference** -- `index.html:5` references `/vite.svg` as the favicon. The file exists in `public/`, but for a product called "Cortex" a custom favicon would be more appropriate. Low priority for Phase 1 but worth a task item for later.
+- [ ] **Consider replacing the Vite favicon reference** -- `index.html:5` references `/vite.svg` as the favicon. The file exists in `public/`, but for a product called "Quorum" a custom favicon would be more appropriate. Low priority for Phase 1 but worth a task item for later.
 
 - [ ] **Consider adding `node_modules` to `.prettierignore`** -- `.prettierignore` currently lists `dist`, `node_modules`, and `*.md`. This is fine since Prettier typically ignores `node_modules` by default, but having it explicit is good practice. This is already correct -- no action needed.
 

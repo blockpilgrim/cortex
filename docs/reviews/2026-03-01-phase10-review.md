@@ -9,22 +9,22 @@ Overall quality is strong. The pipeline is well-structured with clear separation
 ## Files Reviewed
 
 ### New files
-- `/Users/personal/work-projects/cortex/src/lib/pricing.ts`
-- `/Users/personal/work-projects/cortex/src/lib/pricing.test.ts`
-- `/Users/personal/work-projects/cortex/src/components/UsageSummary.tsx`
-- `/Users/personal/work-projects/cortex/src/components/UsageSummary.test.tsx` (untracked)
-- `/Users/personal/work-projects/cortex/src/components/ui/popover.tsx`
+- `/Users/personal/work-projects/quorum/src/lib/pricing.ts`
+- `/Users/personal/work-projects/quorum/src/lib/pricing.test.ts`
+- `/Users/personal/work-projects/quorum/src/components/UsageSummary.tsx`
+- `/Users/personal/work-projects/quorum/src/components/UsageSummary.test.tsx` (untracked)
+- `/Users/personal/work-projects/quorum/src/components/ui/popover.tsx`
 
 ### Modified files
-- `/Users/personal/work-projects/cortex/functions/api/chat.ts`
-- `/Users/personal/work-projects/cortex/functions/api/chat.test.ts` (uncommitted)
-- `/Users/personal/work-projects/cortex/src/hooks/useProviderChat.ts`
-- `/Users/personal/work-projects/cortex/src/hooks/useProviderChat.test.ts` (uncommitted)
-- `/Users/personal/work-projects/cortex/src/components/MessageBubble.tsx`
-- `/Users/personal/work-projects/cortex/src/components/MessageBubble.test.tsx` (uncommitted)
-- `/Users/personal/work-projects/cortex/src/components/ModelColumn.tsx`
-- `/Users/personal/work-projects/cortex/src/components/ModelColumn.test.tsx`
-- `/Users/personal/work-projects/cortex/src/components/TopBar.tsx`
+- `/Users/personal/work-projects/quorum/functions/api/chat.ts`
+- `/Users/personal/work-projects/quorum/functions/api/chat.test.ts` (uncommitted)
+- `/Users/personal/work-projects/quorum/src/hooks/useProviderChat.ts`
+- `/Users/personal/work-projects/quorum/src/hooks/useProviderChat.test.ts` (uncommitted)
+- `/Users/personal/work-projects/quorum/src/components/MessageBubble.tsx`
+- `/Users/personal/work-projects/quorum/src/components/MessageBubble.test.tsx` (uncommitted)
+- `/Users/personal/work-projects/quorum/src/components/ModelColumn.tsx`
+- `/Users/personal/work-projects/quorum/src/components/ModelColumn.test.tsx`
+- `/Users/personal/work-projects/quorum/src/components/TopBar.tsx`
 
 ## Critical (Must Fix)
 

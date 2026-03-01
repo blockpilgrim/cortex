@@ -75,7 +75,7 @@ For the proxy in production, deploy to Cloudflare Pages — `wrangler.toml` is p
 
 ## Live Demo
 
-**[cortex-25w.pages.dev](https://cortex-25w.pages.dev/)** *(URL will change after Cloudflare Pages migration)*
+**[quorum-25w.pages.dev](https://quorum-25w.pages.dev/)** *(URL will change after Cloudflare Pages migration)*
 
 Bring your own API keys — enter them in the settings dialog (gear icon).
 
