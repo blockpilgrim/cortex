@@ -117,9 +117,7 @@ describe('sanitizeFilename', () => {
   })
 
   it('handles mixed special chars, spaces, and hyphens', () => {
-    expect(sanitizeFilename('My Chat! -- About #AI')).toBe(
-      'my-chat-about-ai',
-    )
+    expect(sanitizeFilename('My Chat! -- About #AI')).toBe('my-chat-about-ai')
   })
 
   it('handles unicode/accented characters by removing them', () => {
@@ -653,14 +651,12 @@ describe('exportConversationToMarkdown', () => {
 describe('exportAllConversationsToMarkdown', () => {
   it('combines multiple conversations with separator', () => {
     const data = [
-      makeExportable(
-        { title: 'First Chat' },
-        [makeMessage({ role: 'user', content: 'Hello first' })],
-      ),
-      makeExportable(
-        { title: 'Second Chat' },
-        [makeMessage({ role: 'user', content: 'Hello second' })],
-      ),
+      makeExportable({ title: 'First Chat' }, [
+        makeMessage({ role: 'user', content: 'Hello first' }),
+      ]),
+      makeExportable({ title: 'Second Chat' }, [
+        makeMessage({ role: 'user', content: 'Hello second' }),
+      ]),
     ]
     const md = exportAllConversationsToMarkdown(data)
 
@@ -698,26 +694,20 @@ describe('exportAllConversationsToMarkdown', () => {
 
   it('each conversation has its own provider sections', () => {
     const data = [
-      makeExportable(
-        { id: 1, title: 'Conv A' },
-        [
-          makeMessage({
-            role: 'assistant',
-            provider: 'claude',
-            content: 'Claude in A',
-          }),
-        ],
-      ),
-      makeExportable(
-        { id: 2, title: 'Conv B' },
-        [
-          makeMessage({
-            role: 'assistant',
-            provider: 'gemini',
-            content: 'Gemini in B',
-          }),
-        ],
-      ),
+      makeExportable({ id: 1, title: 'Conv A' }, [
+        makeMessage({
+          role: 'assistant',
+          provider: 'claude',
+          content: 'Claude in A',
+        }),
+      ]),
+      makeExportable({ id: 2, title: 'Conv B' }, [
+        makeMessage({
+          role: 'assistant',
+          provider: 'gemini',
+          content: 'Gemini in B',
+        }),
+      ]),
     ]
     const md = exportAllConversationsToMarkdown(data)
 

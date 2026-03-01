@@ -391,7 +391,11 @@ function ConversationItem({
 /** Skeleton placeholder shown while conversations are loading from Dexie. */
 function ConversationListSkeleton() {
   return (
-    <div className="flex flex-col gap-1 px-2" role="status" aria-label="Loading conversations">
+    <div
+      className="flex flex-col gap-1 px-2"
+      role="status"
+      aria-label="Loading conversations"
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex items-center gap-2 rounded-md px-2 py-1.5">
           <Skeleton className="h-4 w-4 shrink-0 rounded" />

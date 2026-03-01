@@ -133,7 +133,10 @@ function formatMessageMarkdown(msg: Message): string {
   const crossFeedTag = msg.isCrossFeed ? ' [Cross-feed]' : ''
   const roundTag =
     msg.crossFeedRound !== null ? ` (Round ${msg.crossFeedRound})` : ''
-  const timestamp = new Date(msg.timestamp).toISOString().replace('T', ' ').slice(0, 19)
+  const timestamp = new Date(msg.timestamp)
+    .toISOString()
+    .replace('T', ' ')
+    .slice(0, 19)
 
   return `**${roleLabel}**${crossFeedTag}${roundTag} _${timestamp}_\n\n${msg.content}`
 }
@@ -153,8 +156,12 @@ export function exportConversationToMarkdown(
   // Header
   lines.push(`# ${conversation.title}`)
   lines.push('')
-  lines.push(`Created: ${new Date(conversation.createdAt).toISOString().replace('T', ' ').slice(0, 19)}  `)
-  lines.push(`Updated: ${new Date(conversation.updatedAt).toISOString().replace('T', ' ').slice(0, 19)}`)
+  lines.push(
+    `Created: ${new Date(conversation.createdAt).toISOString().replace('T', ' ').slice(0, 19)}  `,
+  )
+  lines.push(
+    `Updated: ${new Date(conversation.updatedAt).toISOString().replace('T', ' ').slice(0, 19)}`,
+  )
   lines.push('')
 
   // Per-provider sections

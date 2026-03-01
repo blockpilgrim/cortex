@@ -177,7 +177,7 @@ export function ExportMenu() {
         {exportError && (
           <>
             <DropdownMenuSeparator />
-            <div className="px-2 py-1.5 text-sm text-destructive">
+            <div className="text-destructive px-2 py-1.5 text-sm">
               {exportError}
             </div>
           </>

@@ -6,7 +6,7 @@
  * to avoid running queries when closed.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { MessageSquareIcon, SearchIcon } from 'lucide-react'
 import {
@@ -61,14 +61,19 @@ function SearchContent({ onClose }: { onClose: () => void }) {
     c.title.toLowerCase().includes(query.toLowerCase()),
   )
 
-  // Reset selection when query changes
-  useEffect(() => {
-    setSelectedIndex(0)
-  }, [query])
+  const handleQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setQuery(e.target.value)
+      setSelectedIndex(0) // Reset selection when query changes
+    },
+    [],
+  )
 
-  // Auto-focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus()
+  // Auto-focus input via ref callback (no useEffect needed)
+  const setInputRef = useCallback((node: HTMLInputElement | null) => {
+    if (node) node.focus()
+    ;(inputRef as React.MutableRefObject<HTMLInputElement | null>).current =
+      node
   }, [])
 
   const selectConversation = useCallback(
@@ -103,12 +108,12 @@ function SearchContent({ onClose }: { onClose: () => void }) {
       <div className="border-border flex items-center gap-2 border-b px-3">
         <SearchIcon className="text-muted-foreground h-4 w-4 shrink-0" />
         <input
-          ref={inputRef}
+          ref={setInputRef}
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={handleQueryChange}
           placeholder="Search conversations..."
-          className="bg-transparent placeholder:text-muted-foreground h-10 flex-1 text-sm outline-none"
+          className="placeholder:text-muted-foreground h-10 flex-1 bg-transparent text-sm outline-none"
           aria-label="Search conversations"
         />
         <kbd className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium">

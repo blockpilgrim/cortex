@@ -257,16 +257,15 @@ function App() {
         <ConversationSidebar onNewConversation={handleNewConversation} />
 
         {/* Main content area */}
-        <main id="main-content" className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <main
+          id="main-content"
+          className="flex min-h-0 min-w-0 flex-1 flex-col"
+        >
           {/* Model columns: 3-column grid on desktop, stacked on mobile.
               animate-in with fade on conversation switch via key. */}
           <div className="flex min-h-0 flex-1 flex-col md:flex-row">
             <ModelColumn ref={claudeRef} provider="claude" label="Claude" />
-            <ModelColumn
-              ref={chatgptRef}
-              provider="chatgpt"
-              label="ChatGPT"
-            />
+            <ModelColumn ref={chatgptRef} provider="chatgpt" label="ChatGPT" />
             <ModelColumn ref={geminiRef} provider="gemini" label="Gemini" />
           </div>
 

@@ -99,7 +99,7 @@ export function InputBar({
           rows={1}
           aria-label="Message input"
           className={cn(
-            'border-input bg-transparent placeholder:text-muted-foreground focus-visible:ring-ring flex-1 resize-none rounded-md border px-3 py-2 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            'border-input placeholder:text-muted-foreground focus-visible:ring-ring flex-1 resize-none rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
           )}
         />
         <Button

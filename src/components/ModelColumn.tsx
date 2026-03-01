@@ -78,7 +78,7 @@ export const ModelColumn = memo(
     return (
       <section
         aria-label={`${label} conversation`}
-        className="border-border flex min-h-0 flex-1 flex-col border-b last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"
+        className="border-border flex min-h-0 flex-1 flex-col border-b last:border-b-0 md:border-r md:border-b-0 md:last:border-r-0"
       >
         {/* Column header */}
         <div className="border-border flex items-center gap-2 border-b px-3 py-2">
@@ -106,7 +106,10 @@ export const ModelColumn = memo(
               onClick={stop}
               aria-label={`Stop ${label} streaming`}
             >
-              <span className="bg-foreground h-2.5 w-2.5 rounded-sm" aria-hidden="true" />
+              <span
+                className="bg-foreground h-2.5 w-2.5 rounded-sm"
+                aria-hidden="true"
+              />
             </Button>
           )}
         </div>
@@ -155,7 +158,10 @@ export const ModelColumn = memo(
                     role="status"
                     aria-label={`Waiting for ${label} response`}
                   >
-                    <LoaderIcon className="text-muted-foreground h-4 w-4 animate-spin" aria-hidden="true" />
+                    <LoaderIcon
+                      className="text-muted-foreground h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                   </div>
                 )}
               </>
@@ -163,9 +169,15 @@ export const ModelColumn = memo(
 
             {/* Error display */}
             {error && (
-              <div role="alert" className="bg-destructive/10 text-destructive self-start rounded-lg px-3 py-2 text-sm">
+              <div
+                role="alert"
+                className="bg-destructive/10 text-destructive self-start rounded-lg px-3 py-2 text-sm"
+              >
                 <div className="flex items-center gap-2">
-                  <AlertCircleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <AlertCircleIcon
+                    className="h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>{error.message}</span>
                 </div>
                 <Button

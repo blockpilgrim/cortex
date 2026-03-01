@@ -104,7 +104,7 @@ describe('ModelColumn', () => {
     useAppStore.setState({ activeConversationId: 1 })
     render(<ModelColumn provider="claude" label="Claude" />)
 
-    expect(screen.getByLabelText('Stop streaming')).toBeInTheDocument()
+    expect(screen.getByLabelText('Stop Claude streaming')).toBeInTheDocument()
   })
 
   it('shows error display when there is an error', () => {
