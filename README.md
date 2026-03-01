@@ -8,19 +8,19 @@ Quorum eliminates the tab-switching workflow of comparing AI models. Type a mess
 
 The interesting part is **cross-feed**: a single button press takes each model's latest response and shares it with the other two, triggering a second round of concurrent responses. The models effectively review each other's work. You can repeat this for as many rounds as you want — useful for iterative reasoning, code review, or getting models to challenge each other's assumptions.
 
-Everything runs client-side with a bring-your-own-key model. API keys stay in your browser's IndexedDB. A thin Cloudflare Worker proxy (~150 lines) exists solely because OpenAI and Gemini don't support browser CORS — it forwards requests and streams responses, storing nothing.
+Everything runs client-side with a bring-your-own-key model. A single OpenRouter API key gives access to all three providers. Keys stay in your browser's IndexedDB. A thin Cloudflare Worker proxy exists solely because OpenAI and Gemini don't support browser CORS — it forwards requests to OpenRouter and streams responses, storing nothing.
 
 ## Tech Stack
 
 - **Frontend:** React 19 + TypeScript, built with Vite 7
 - **Styling:** Tailwind CSS v4 + shadcn/ui components
 - **AI Streaming:** Vercel AI SDK — three independent `useChat` instances, one per provider, with adaptive thinking/reasoning enabled for all models
-- **Providers:** Claude (Sonnet/Opus 4.6) via `@ai-sdk/anthropic`, GPT-5.2/5.3 Codex via `@ai-sdk/openai`, Gemini 3.1 Pro via `@openrouter/ai-sdk-provider`
+- **Providers:** All models routed through OpenRouter via `@openrouter/ai-sdk-provider` — Claude (Sonnet/Opus 4.6), GPT-5.2/5.3 Codex, Gemini 3.1 Pro
 - **Persistence:** Dexie.js v4 (IndexedDB) — conversations, messages, and API keys stored locally with reactive queries via `useLiveQuery`
 - **State:** Zustand v5 for ephemeral UI state (streaming status, active conversation, model selections)
 - **Proxy:** Cloudflare Pages Functions — stateless CORS proxy using AI SDK's `streamText`
 - **PWA:** Installable with offline app shell caching via `vite-plugin-pwa`
-- **Testing:** Vitest + React Testing Library (405 tests), Playwright configured for E2E
+- **Testing:** Vitest + React Testing Library (406 tests), Playwright configured for E2E
 
 ## Architecture
 
@@ -42,7 +42,7 @@ Cloudflare Worker (stateless proxy)
 └── Streams response back with CORS headers
          │
          ▼
-Anthropic API / OpenAI API / OpenRouter API (Gemini)
+OpenRouter API (all providers)
 ```
 
 **Key design decisions:**
@@ -69,7 +69,7 @@ npm run test
 npm run build
 ```
 
-You'll need API keys from at least one provider — enter them in the settings dialog (gear icon). Keys are stored in your browser's IndexedDB and sent to the proxy with each request.
+You'll need an OpenRouter API key — enter it in the settings dialog (gear icon). One key gives access to all three providers. Keys are stored in your browser's IndexedDB and sent to the proxy with each request.
 
 For the proxy in production, deploy to Cloudflare Pages — `wrangler.toml` is preconfigured. The free tier (100K requests/day) is more than sufficient.
 
@@ -77,8 +77,8 @@ For the proxy in production, deploy to Cloudflare Pages — `wrangler.toml` is p
 
 **[quorum-25w.pages.dev](https://quorum-25w.pages.dev/)** *(URL will change after Cloudflare Pages migration)*
 
-Bring your own API keys — enter them in the settings dialog (gear icon).
+Bring your own OpenRouter API key — enter it in the settings dialog (gear icon).
 
 ## Status
 
-Feature-complete MVP. Deployed on Cloudflare Pages. 405 tests passing. Built over a focused sprint as a daily-driver tool for comparing AI model outputs.
+Feature-complete MVP. Deployed on Cloudflare Pages. 406 tests passing. Built over a focused sprint as a daily-driver tool for comparing AI model outputs.

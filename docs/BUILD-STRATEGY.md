@@ -20,7 +20,7 @@
 
 ### AI Streaming: Vercel AI SDK
 
-**Decision**: Use the `ai` package (AI SDK core) with `@ai-sdk/react` on the client and `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@openrouter/ai-sdk-provider` provider adapters on the server proxy.
+**Decision**: Use the `ai` package (AI SDK core) with `@ai-sdk/react` on the client and `@openrouter/ai-sdk-provider` on the server proxy (all providers route through OpenRouter with a single API key).
 
 **Rationale**: The AI SDK provides a unified interface across all three providers. The `useChat` hook handles streaming state, message accumulation, loading/error states, and abort — all things you'd otherwise build from scratch. There is a documented pattern for exactly this use case: [streaming multiple models in parallel with `useChat`](https://www.robinwieruch.de/react-ai-sdk-multiple-streams/). Each model column gets its own `useChat` instance, sharing the same user input but maintaining independent message histories.
 
@@ -119,12 +119,12 @@ A Cloudflare Worker solves this uniformly: it receives requests from the SPA, ca
 │   Request in → add CORS headers → forward to provider    │
 │   ← stream response back with CORS                      │
 │                                                          │
-│   Uses: @ai-sdk/anthropic, @ai-sdk/openai,              │
-│         @openrouter/ai-sdk-provider, streamText          │
-└─────────┬──────────────┬──────────────┬─────────────────┘
-          │              │              │
-          ▼              ▼              ▼
-     Anthropic API   OpenAI API   OpenRouter API
+│   Uses: @openrouter/ai-sdk-provider, streamText          │
+└──────────────────────────┬───────────────────────────────┘
+                           │
+                           ▼
+                    OpenRouter API
+              (routes to all providers)
 ```
 
 **Data flow for a user message:**
@@ -168,7 +168,7 @@ A Cloudflare Worker solves this uniformly: it receives requests from the SPA, ca
 - Compound index: `[conversationId+provider+timestamp]` for efficient per-thread queries
 
 **Settings** (single record)
-- `apiKeys` — per-provider, stored as plain strings (encryption deferred — single-user tool with local-only storage)
+- `apiKeys` — single OpenRouter key (plus per-provider fields retained for future direct API support), stored as plain strings (encryption deferred — single-user tool with local-only storage)
 - `selectedModels` — per-provider model IDs
 - `theme` — dark/light
 

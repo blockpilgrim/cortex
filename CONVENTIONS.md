@@ -364,7 +364,7 @@ export const ModelColumn = memo(function ModelColumn({ provider, label }: Props)
 - Export `onRequestPost` for POST handlers, `onRequestOptions` for CORS preflight
 - The `PagesFunction` type from `@cloudflare/workers-types` is available globally (no import needed)
 - Functions have their own `functions/tsconfig.json` separate from the app's TS config
-- Use `createAnthropic()`, `createOpenAI()`, `createOpenRouter()` with `{ apiKey }` for BYOK pattern
+- Use `createOpenRouter()` with `{ apiKey }` for BYOK pattern (all providers route through OpenRouter)
 - Use `streamText().toUIMessageStreamResponse()` to produce streams compatible with `useChat`
 - Pass `providerOptions` to `streamText()` for provider-specific thinking/reasoning config (see `PROVIDER_OPTIONS` map)
 - Pass `sendReasoning: true` to `toUIMessageStreamResponse()` to stream reasoning content to the client
@@ -373,13 +373,13 @@ export const ModelColumn = memo(function ModelColumn({ provider, label }: Props)
 **Example**:
 ```ts
 import { streamText } from 'ai'
-import { createAnthropic } from '@ai-sdk/anthropic'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 
 export const onRequestPost: PagesFunction = async (context) => {
   const { provider, model, messages, apiKey } = await context.request.json()
-  const anthropic = createAnthropic({ apiKey })
+  const openrouter = createOpenRouter({ apiKey })
   const result = streamText({
-    model: anthropic(model),
+    model: openrouter(model),
     messages,
     providerOptions: PROVIDER_OPTIONS[provider],
   })
@@ -400,11 +400,11 @@ export const onRequestPost: PagesFunction = async (context) => {
 - Passed to `streamText()` via `providerOptions: PROVIDER_OPTIONS[provider]`
 - Thinking is always on — all providers use their highest-quality reasoning mode by default
 
-**Current configuration**:
+**Current configuration** (all use `openrouter` SDK key since all providers route through OpenRouter):
 | Provider | SDK Key | Config |
 |----------|---------|--------|
-| Claude | `anthropic` | `thinking: { type: 'adaptive' }` |
-| OpenAI | `openai` | `reasoningEffort: 'high'` |
+| Claude | `openrouter` | `thinking: { type: 'adaptive' }` |
+| ChatGPT | `openrouter` | `reasoningEffort: 'high'` |
 | Gemini | `openrouter` | `reasoning: { effort: 'high' }` |
 
 **Note**: This config is per-provider, not per-model. All models for a given provider share the same thinking config. If a future budget model does not support thinking, this structure will need to become model-aware.
@@ -442,8 +442,8 @@ export const onRequestPost: PagesFunction = async (context) => {
 const mockStreamText = vi.fn()
 vi.mock('ai', () => ({ streamText: mockStreamText }))
 
-const mockCreateAnthropic = vi.fn()
-vi.mock('@ai-sdk/anthropic', () => ({ createAnthropic: mockCreateAnthropic }))
+const mockCreateOpenRouter = vi.fn()
+vi.mock('@openrouter/ai-sdk-provider', () => ({ createOpenRouter: mockCreateOpenRouter }))
 ```
 
 **Why**: Functions have their own TypeScript project and cannot share types with Vitest globals. Mocking at the module boundary keeps tests fast and avoids real API calls.
@@ -606,9 +606,9 @@ const handleModelChange = async (modelId: string) => {
   setSelectedModel(provider, modelId) // Zustand for immediate effect
 }
 
-// API key change only needs Dexie (read at request time)
+// OpenRouter API key change only needs Dexie (read at request time)
 const handleApiKeyChange = (value: string) => {
-  updateSettings({ apiKeys: { [provider]: value } })
+  updateSettings({ apiKeys: { openrouter: value } })
 }
 ```
 

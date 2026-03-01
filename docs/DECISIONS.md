@@ -118,3 +118,16 @@ Significant decisions made during implementation. Referenced by CLAUDE.md's Comp
 **Decision:** Replace `@ai-sdk/google` with `@openrouter/ai-sdk-provider`. Route all Gemini requests through OpenRouter using model ID `google/gemini-3.1-pro-preview`. Use `openrouter.reasoning: { effort: 'high' }` for thinking config. Users provide an OpenRouter API key instead of a Google API key for the Gemini column.
 
 **Consequence:** Gemini reduced from two models (2.5 Flash + 2.5 Pro) to one (3.1 Pro). Users need an OpenRouter account/key instead of a Google AI key. The settings placeholder for Gemini says "OpenRouter" to make this clear. OpenRouter pricing may differ slightly from Google direct. Existing users with Google API keys stored in IndexedDB will need to replace them with OpenRouter keys.
+
+---
+
+## 010: Route ALL providers through OpenRouter (single API key)
+
+**Date:** 2026-03-01
+**Phase:** Post-Phase 12
+
+**Context:** After Decision 009 routed Gemini through OpenRouter, the app required three separate API keys (Anthropic direct, OpenAI direct, OpenRouter for Gemini). This was high friction for users. OpenRouter supports all three providers through a single API key with a unified gateway. A future feature will allow per-provider direct API access, but the default should be simple.
+
+**Decision:** Route all three providers (Claude, ChatGPT, Gemini) through OpenRouter by default. Remove `createAnthropic()` and `createOpenAI()` imports from the proxy — only `createOpenRouter()` is used. The client maps internal model IDs (e.g., `claude-sonnet-4-6`) to OpenRouter format (e.g., `anthropic/claude-sonnet-4-6`) via `toOpenRouterModelId()` in `src/lib/models.ts`. The Settings UI shows a single "OpenRouter API Key" field. Per-provider API key fields are retained in the Dexie schema for the future direct API feature but are not displayed or used at runtime.
+
+**Consequence:** Users need only one API key for full access to all three providers. The `@ai-sdk/anthropic` and `@ai-sdk/openai` packages remain in `package.json` for the future per-provider routing feature but are not imported. `PROVIDER_OPTIONS` entries all use the `openrouter` SDK key. OpenRouter's provider passthrough for thinking/reasoning options is best-effort — if issues arise, the `PROVIDER_OPTIONS` may need adjustment. Existing users with per-provider keys stored in Dexie will need to enter an OpenRouter key in the updated settings UI.

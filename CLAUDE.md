@@ -10,7 +10,7 @@ Quorum is a unified tri-model AI workspace — a client-side SPA that sends user
 
 - **Frontend:** Vite 7 + React 19 + TypeScript
 - **Styling:** Tailwind CSS v4 + shadcn/ui
-- **AI Streaming:** Vercel AI SDK (`ai`, `@ai-sdk/react`) with provider adapters (`@ai-sdk/anthropic`, `@ai-sdk/openai`, `@openrouter/ai-sdk-provider`)
+- **AI Streaming:** Vercel AI SDK (`ai`, `@ai-sdk/react`) with `@openrouter/ai-sdk-provider` (all providers route through OpenRouter)
 - **Persistence:** Dexie.js v4 (IndexedDB) — conversations, messages, API keys stored locally
 - **State:** Zustand v5 for ephemeral UI state
 - **API Proxy:** Cloudflare Workers (Pages Functions) — stateless proxy required because OpenAI and Gemini block browser CORS
