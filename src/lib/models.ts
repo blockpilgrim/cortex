@@ -25,9 +25,7 @@ export const MODEL_OPTIONS: Record<Provider, ModelOption[]> = {
     { id: 'gpt-5.2', label: 'GPT-5.2' },
     { id: 'gpt-5.3-codex', label: 'GPT-5.3 Codex' },
   ],
-  gemini: [
-    { id: 'google/gemini-3.1-pro-preview', label: '3.1 Pro' },
-  ],
+  gemini: [{ id: 'google/gemini-3.1-pro-preview', label: '3.1 Pro' }],
 }
 
 /** All supported providers, derived from MODEL_OPTIONS keys. */

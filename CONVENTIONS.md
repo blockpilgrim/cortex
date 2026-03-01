@@ -968,3 +968,48 @@ useKeyboardShortcuts({
 ```
 
 **Why**: When installed as a PWA with `display: standalone`, the app runs without the Safari chrome. On iPhones with a home indicator bar, bottom-pinned elements can be obscured. `env(safe-area-inset-bottom)` provides the safe padding. Using `max()` ensures a minimum padding even on devices without the inset.
+
+---
+
+## Flex Overflow Containment
+
+**When to use**: When a flex child contains scrollable content (e.g., `ScrollArea`) and must not grow beyond its parent's bounds.
+
+**Example**:
+```tsx
+// Every flex child in the chain from viewport to scroll container needs min-h-0
+<div className="flex h-dvh flex-col">
+  <header className="shrink-0" />
+  <div className="flex min-h-0 flex-1 flex-col">
+    <ScrollArea className="min-h-0 flex-1">
+      {/* scrollable content */}
+    </ScrollArea>
+  </div>
+</div>
+```
+
+**Why**: Flex children default to `min-height: auto`, which prevents them from shrinking below their content height. This causes scrollable containers to expand to fit all content instead of activating overflow scrolling. Adding `min-h-0` (`min-height: 0`) overrides this default. Every flex child in the chain from the viewport root to the scroll container needs `min-h-0` — a single missing link breaks the entire scroll containment. Add `overflow-hidden` on the direct parent of the scroll area as a second layer of defense.
+
+---
+
+## Anti-pattern: Missing `min-h-0` in Flex Scroll Chain
+
+**Don't do this**:
+```tsx
+<div className="flex flex-1 flex-col">
+  <ScrollArea className="flex-1">
+    {/* Content grows unboundedly — no scrolling */}
+  </ScrollArea>
+</div>
+```
+
+**Why it fails**: Without `min-h-0`, the flex child's minimum height is determined by its content. The ScrollArea expands to fit all messages instead of activating its internal scroll viewport. Content overflows the intended boundaries.
+
+**Do this instead**:
+```tsx
+<div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+  <ScrollArea className="min-h-0 flex-1">
+    {/* Content scrolls within constrained bounds */}
+  </ScrollArea>
+</div>
+```

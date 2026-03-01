@@ -159,10 +159,7 @@ describe('InputBar', () => {
 
       const textarea = screen.getByLabelText('Message input')
       // Type first line, Shift+Enter for newline, type second line, Enter to send
-      await user.type(
-        textarea,
-        'first{Shift>}{Enter}{/Shift}second{Enter}',
-      )
+      await user.type(textarea, 'first{Shift>}{Enter}{/Shift}second{Enter}')
 
       expect(mockOnSend).toHaveBeenCalledWith('first\nsecond')
       expect(textarea).toHaveValue('')

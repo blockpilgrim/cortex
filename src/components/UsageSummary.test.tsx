@@ -199,7 +199,9 @@ describe('UsageSummary', () => {
 
       await waitFor(() => {
         // Model display name for 'claude-sonnet-4-6' is 'Sonnet 4.6'
-        expect(screen.getAllByText('Sonnet 4.6').length).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Sonnet 4.6').length).toBeGreaterThanOrEqual(
+          1,
+        )
       })
     })
 

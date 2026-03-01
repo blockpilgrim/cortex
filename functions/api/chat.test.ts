@@ -405,7 +405,10 @@ describe('providerOptions (thinking/reasoning)', () => {
   })
 
   it('passes openrouter reasoning for gemini provider', async () => {
-    const args = await captureStreamTextArgs('gemini', 'google/gemini-3.1-pro-preview')
+    const args = await captureStreamTextArgs(
+      'gemini',
+      'google/gemini-3.1-pro-preview',
+    )
     expect(args.providerOptions).toBeDefined()
     expect(args.providerOptions!.openrouter).toEqual({
       reasoning: { effort: 'high' },
