@@ -84,23 +84,20 @@ function SearchContent({ onClose }: { onClose: () => void }) {
     [setActiveConversationId, onClose],
   )
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSelectedIndex((prev) => Math.min(prev + 1, filtered.length - 1))
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSelectedIndex((prev) => Math.max(prev - 1, 0))
-      } else if (e.key === 'Enter') {
-        e.preventDefault()
-        if (filtered[selectedIndex]) {
-          selectConversation(filtered[selectedIndex])
-        }
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSelectedIndex((prev) => Math.min(prev + 1, filtered.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSelectedIndex((prev) => Math.max(prev - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (filtered[selectedIndex]) {
+        selectConversation(filtered[selectedIndex])
       }
-    },
-    [filtered, selectedIndex, selectConversation],
-  )
+    }
+  }
 
   return (
     <div onKeyDown={handleKeyDown}>
@@ -114,7 +111,15 @@ function SearchContent({ onClose }: { onClose: () => void }) {
           onChange={handleQueryChange}
           placeholder="Search conversations..."
           className="placeholder:text-muted-foreground h-10 flex-1 bg-transparent text-sm outline-none"
+          role="combobox"
           aria-label="Search conversations"
+          aria-expanded={filtered.length > 0}
+          aria-controls="search-results"
+          aria-activedescendant={
+            filtered[selectedIndex]
+              ? `search-result-${filtered[selectedIndex].id}`
+              : undefined
+          }
         />
         <kbd className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px] font-medium">
           ESC
@@ -123,6 +128,7 @@ function SearchContent({ onClose }: { onClose: () => void }) {
 
       {/* Results list */}
       <div
+        id="search-results"
         className="max-h-64 overflow-y-auto p-1"
         role="listbox"
         aria-label="Search results"
@@ -135,6 +141,7 @@ function SearchContent({ onClose }: { onClose: () => void }) {
           filtered.map((conv, index) => (
             <button
               key={conv.id}
+              id={`search-result-${conv.id}`}
               role="option"
               aria-selected={index === selectedIndex}
               onClick={() => selectConversation(conv)}

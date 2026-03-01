@@ -6,6 +6,8 @@
  * - Input enable/disable based on API keys and streaming state
  * - Send message behavior
  * - Cross-feed button enable/disable and click handling
+ * - Textarea: Shift+Enter inserts newline, Enter sends message
+ * - Textarea: renders as a textarea element (not input)
  */
 
 import 'fake-indexeddb/auto'
@@ -92,6 +94,96 @@ describe('InputBar', () => {
     const input = screen.getByPlaceholderText('Ask all three models...')
     await user.type(input, '   {Enter}')
     expect(mockOnSend).not.toHaveBeenCalled()
+  })
+
+  describe('textarea behavior', () => {
+    it('renders a textarea element', async () => {
+      await updateSettings({ apiKeys: { claude: 'sk-test-key-123' } })
+      render(<InputBar onSend={mockOnSend} />)
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText('Ask all three models...'),
+        ).not.toBeDisabled()
+      })
+      const textarea = screen.getByLabelText('Message input')
+      expect(textarea.tagName).toBe('TEXTAREA')
+    })
+
+    it('does not send on Shift+Enter (allows newline)', async () => {
+      await updateSettings({ apiKeys: { claude: 'sk-test-key-123' } })
+      const user = userEvent.setup()
+      render(<InputBar onSend={mockOnSend} />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText('Ask all three models...'),
+        ).not.toBeDisabled()
+      })
+
+      const textarea = screen.getByLabelText('Message input')
+      await user.type(textarea, 'line one{Shift>}{Enter}{/Shift}line two')
+
+      // Should NOT have sent
+      expect(mockOnSend).not.toHaveBeenCalled()
+      // The textarea should contain a newline between the two lines
+      expect(textarea).toHaveValue('line one\nline two')
+    })
+
+    it('sends on bare Enter (no Shift)', async () => {
+      await updateSettings({ apiKeys: { claude: 'sk-test-key-123' } })
+      const user = userEvent.setup()
+      render(<InputBar onSend={mockOnSend} />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText('Ask all three models...'),
+        ).not.toBeDisabled()
+      })
+
+      const textarea = screen.getByLabelText('Message input')
+      await user.type(textarea, 'Hello world{Enter}')
+
+      expect(mockOnSend).toHaveBeenCalledWith('Hello world')
+      expect(textarea).toHaveValue('')
+    })
+
+    it('sends multiline content on Enter after Shift+Enter', async () => {
+      await updateSettings({ apiKeys: { claude: 'sk-test-key-123' } })
+      const user = userEvent.setup()
+      render(<InputBar onSend={mockOnSend} />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText('Ask all three models...'),
+        ).not.toBeDisabled()
+      })
+
+      const textarea = screen.getByLabelText('Message input')
+      // Type first line, Shift+Enter for newline, type second line, Enter to send
+      await user.type(
+        textarea,
+        'first{Shift>}{Enter}{/Shift}second{Enter}',
+      )
+
+      expect(mockOnSend).toHaveBeenCalledWith('first\nsecond')
+      expect(textarea).toHaveValue('')
+    })
+
+    it('does not send when Enter is pressed on empty textarea', async () => {
+      await updateSettings({ apiKeys: { claude: 'sk-test-key-123' } })
+      render(<InputBar onSend={mockOnSend} />)
+
+      await waitFor(() => {
+        expect(
+          screen.getByPlaceholderText('Ask all three models...'),
+        ).not.toBeDisabled()
+      })
+
+      const textarea = screen.getByLabelText('Message input')
+      fireEvent.keyDown(textarea, { key: 'Enter' })
+
+      expect(mockOnSend).not.toHaveBeenCalled()
+    })
   })
 
   describe('cross-feed button', () => {

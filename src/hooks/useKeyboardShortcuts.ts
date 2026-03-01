@@ -2,11 +2,12 @@
  * Global keyboard shortcuts for the application.
  *
  * Shortcuts:
- * - Cmd/Ctrl+N: New conversation
+ * - Cmd/Ctrl+N: New conversation (overrides browser "new window" — intentional trade-off
+ *   for a single-user power-tool where new-conversation is the primary action)
  * - Cmd/Ctrl+K: Open conversation search
  *
- * Shortcuts are disabled when the active element is an input, textarea,
- * or contenteditable to avoid interfering with text entry.
+ * These use Cmd/Ctrl modifiers, which do not conflict with normal text entry
+ * in inputs/textareas (modifier+key combos are not used for typing).
  */
 
 import { useEffect } from 'react'

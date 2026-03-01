@@ -74,6 +74,12 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .conversation-fade-in {
+    animation: none;
+  }
+}
+
 /* Minimal prose styling for markdown-rendered assistant messages.
    Replaces @tailwindcss/typography which is not yet Tailwind v4 compatible. */
 @layer components {
