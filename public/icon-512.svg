@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#1a1a2e"/>
+  <text x="256" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="256" font-weight="700" fill="#e0e0ff" text-anchor="middle">C</text>
+  <circle cx="373" cy="139" r="42" fill="#6366f1" opacity="0.9"/>
+  <circle cx="139" cy="373" r="32" fill="#06b6d4" opacity="0.9"/>
+  <circle cx="405" cy="373" r="27" fill="#f59e0b" opacity="0.9"/>
+</svg>
