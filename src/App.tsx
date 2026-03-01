@@ -13,20 +13,36 @@
  * On first message, auto-creates a conversation in Dexie.
  */
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { TopBar } from '@/components/TopBar'
 import { ConversationSidebar } from '@/components/ConversationSidebar'
 import { ModelColumn } from '@/components/ModelColumn'
 import type { ModelColumnHandle } from '@/components/ModelColumn'
 import { InputBar } from '@/components/InputBar'
 import { useAppStore } from '@/lib/store'
-import { createConversation, updateConversation } from '@/lib/db'
+import { createConversation, getSettings, updateConversation } from '@/lib/db'
 
 function App() {
   const activeConversationId = useAppStore((s) => s.activeConversationId)
   const setActiveConversationId = useAppStore((s) => s.setActiveConversationId)
   const selectedModels = useAppStore((s) => s.selectedModels)
   const streamingStatus = useAppStore((s) => s.streamingStatus)
+
+  const setSelectedModels = useAppStore((s) => s.setSelectedModels)
+
+  // On mount, load persisted settings from Dexie and sync to Zustand.
+  // This ensures the store starts with persisted model selections, not just defaults.
+  useEffect(() => {
+    async function syncSettings() {
+      try {
+        const settings = await getSettings()
+        setSelectedModels(settings.selectedModels)
+      } catch (err) {
+        console.error('[App] Failed to sync settings from Dexie:', err)
+      }
+    }
+    syncSettings()
+  }, [setSelectedModels])
 
   // Derived streaming state from the Zustand store (safe to read during render)
   const isAnyStreaming =
@@ -43,42 +59,46 @@ function App() {
 
   const handleSend = useCallback(
     async (text: string) => {
-      let conversationId = activeConversationId
+      try {
+        let conversationId = activeConversationId
 
-      // Auto-create a conversation if none is active
-      if (conversationId === null) {
-        conversationId = await createConversation({
-          title: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
-          modelConfig: { ...selectedModels },
-        })
-        setActiveConversationId(conversationId)
+        // Auto-create a conversation if none is active
+        if (conversationId === null) {
+          conversationId = await createConversation({
+            title: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+            modelConfig: { ...selectedModels },
+          })
+          setActiveConversationId(conversationId)
 
-        // Allow the state update and useProviderChat seeding effect to settle.
-        // The seeding effect runs on conversationId change; without this delay,
-        // send() fires before the hook sees the new ID. This is a known
-        // timing-based workaround — may be replaced with a ref-based queue or
-        // callback pattern if it proves flaky on slower devices.
-        await new Promise((resolve) => setTimeout(resolve, 50))
-      } else {
-        // Update the conversation's updatedAt timestamp
-        await updateConversation(conversationId, {})
-      }
+          // Allow the state update and useProviderChat seeding effect to settle.
+          // The seeding effect runs on conversationId change; without this delay,
+          // send() fires before the hook sees the new ID. This is a known
+          // timing-based workaround — may be replaced with a ref-based queue or
+          // callback pattern if it proves flaky on slower devices.
+          await new Promise((resolve) => setTimeout(resolve, 50))
+        } else {
+          // Update the conversation's updatedAt timestamp
+          await updateConversation(conversationId, {})
+        }
 
-      // Send to all three providers concurrently via imperative handles.
-      // Each send() is independent -- Promise.allSettled ensures one provider
-      // failing does not block or affect the others.
-      const sendPromises: Promise<boolean>[] = []
-      if (claudeRef.current) {
-        sendPromises.push(claudeRef.current.send(text))
-      }
-      if (chatgptRef.current) {
-        sendPromises.push(chatgptRef.current.send(text))
-      }
-      if (geminiRef.current) {
-        sendPromises.push(geminiRef.current.send(text))
-      }
+        // Send to all three providers concurrently via imperative handles.
+        // Each send() is independent -- Promise.allSettled ensures one provider
+        // failing does not block or affect the others.
+        const sendPromises: Promise<boolean>[] = []
+        if (claudeRef.current) {
+          sendPromises.push(claudeRef.current.send(text))
+        }
+        if (chatgptRef.current) {
+          sendPromises.push(chatgptRef.current.send(text))
+        }
+        if (geminiRef.current) {
+          sendPromises.push(geminiRef.current.send(text))
+        }
 
-      await Promise.allSettled(sendPromises)
+        await Promise.allSettled(sendPromises)
+      } catch (err) {
+        console.error('[App] handleSend failed:', err)
+      }
     },
     [activeConversationId, setActiveConversationId, selectedModels],
   )

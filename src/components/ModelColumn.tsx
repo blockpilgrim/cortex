@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { MessageBubble } from '@/components/MessageBubble'
 import { useProviderChat, getMessageText } from '@/hooks/useProviderChat'
 import type { Provider } from '@/lib/db/types'
+import { getModelDisplayName } from '@/lib/models'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/lib/store'
 
@@ -78,7 +79,12 @@ export const ModelColumn = memo(
           <div
             className={cn('h-2 w-2 rounded-full', PROVIDER_COLORS[provider])}
           />
-          <span className="text-foreground text-sm font-medium">{label}</span>
+          <div className="flex flex-col">
+            <span className="text-foreground text-sm font-medium">{label}</span>
+            <span className="text-muted-foreground text-[11px] leading-tight">
+              {getModelDisplayName(model)}
+            </span>
+          </div>
           {isLoading && (
             <LoaderIcon className="text-muted-foreground h-3 w-3 animate-spin" />
           )}
