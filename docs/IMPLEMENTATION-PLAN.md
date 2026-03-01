@@ -418,3 +418,16 @@ Phase 1  (Scaffold)
 ```
 
 Phases 4 and 2-3 are independent and can be worked on concurrently. Phases 7, 8, and 9 can be parallelized after Phase 6. Phases 10 and 11 can be parallelized after Phase 9.
+
+---
+
+## Post-MVP Enhancements
+
+### [x] Unified OpenRouter Routing (2026-03-01)
+
+Migrated all three providers from direct API adapters to a single OpenRouter gateway. See Decision 010 in `docs/DECISIONS.md`.
+
+- All providers route through `createOpenRouter()` — single API key for full access
+- Settings UI simplified to one OpenRouter API key input
+- Model ID mapping via `toOpenRouterModelId()` in `src/lib/models.ts`
+- Per-provider direct API infrastructure retained for future feature

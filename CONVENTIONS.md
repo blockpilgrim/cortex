@@ -992,6 +992,30 @@ useKeyboardShortcuts({
 
 ---
 
+## OpenRouter Unified Routing
+
+**When to use**: For all AI provider API calls. All providers (Claude, ChatGPT, Gemini) route through OpenRouter by default.
+
+- The proxy uses `createOpenRouter()` exclusively — no direct provider adapters imported
+- Model IDs are mapped from internal format (e.g., `claude-sonnet-4-6`) to OpenRouter format (e.g., `anthropic/claude-sonnet-4-6`) on the client side before sending to the proxy
+- `OPENROUTER_MODEL_MAP` in `src/lib/models.ts` holds the mapping; `toOpenRouterModelId()` resolves with passthrough fallback
+- The client reads `settings.apiKeys.openrouter` (not per-provider keys)
+- Per-provider `apiKeys` fields exist in the Dexie schema but are not used at runtime (reserved for future direct API feature)
+
+**Example**:
+```ts
+import { toOpenRouterModelId } from '@/lib/models'
+
+// Client-side: map model ID before sending to proxy
+const openRouterModelId = toOpenRouterModelId(selectedModels[provider])
+// → 'claude-sonnet-4-6' becomes 'anthropic/claude-sonnet-4-6'
+// → 'google/gemini-3.1-pro-preview' stays unchanged (already OpenRouter format)
+```
+
+**Why**: One API key gives full access to all three providers. Simplifies onboarding and reduces settings complexity. The mapping layer means stored data (Dexie model selections) uses stable internal IDs — changing the routing layer doesn't require data migration.
+
+---
+
 ## Anti-pattern: Missing `min-h-0` in Flex Scroll Chain
 
 **Don't do this**:
