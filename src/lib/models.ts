@@ -32,7 +32,9 @@ export const MODEL_OPTIONS: Record<Provider, ModelOption[]> = {
 }
 
 /** All supported providers, derived from MODEL_OPTIONS keys. */
-export const PROVIDERS = Object.keys(MODEL_OPTIONS) as Provider[]
+export const PROVIDERS: readonly Provider[] = Object.freeze(
+  Object.keys(MODEL_OPTIONS) as Provider[],
+)
 
 /** Default model ID per provider (first entry in MODEL_OPTIONS). */
 export const DEFAULT_MODELS: Record<Provider, string> = {

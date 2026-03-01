@@ -7,6 +7,7 @@ import 'fake-indexeddb/auto'
 
 import { db } from '@/lib/db/schema'
 import type { ModelConfig } from '@/lib/db/types'
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 import {
   createConversation,
@@ -24,13 +25,11 @@ const defaultModelConfig: ModelConfig = {
 }
 
 beforeEach(async () => {
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 describe('createConversation', () => {

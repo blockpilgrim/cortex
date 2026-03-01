@@ -25,6 +25,8 @@ src/
     useProviderChat.ts    # Per-provider chat hook (wraps useChat)
     useKeyboardShortcuts.ts # Global keyboard shortcuts (Cmd/Ctrl+N, Cmd/Ctrl+K)
   test/          # Test setup and shared test utilities
+    setup.ts     # Vitest setup: jest-dom matchers, ResizeObserver polyfill
+    db-helpers.ts # Dexie test utilities: clearAllTables(), deleteDatabase()
 functions/       # Cloudflare Pages Functions (API proxy)
   api/
     chat.ts      # POST /api/chat — provider proxy endpoint
@@ -111,7 +113,8 @@ import { Input } from '@/components/ui/input'
 - Use the `.test.ts` or `.test.tsx` extension (not `.spec`)
 - Vitest globals are enabled (`describe`, `it`, `expect` available without imports)
 - React Testing Library is configured with jsdom environment
-- Setup file at `src/test/setup.ts` loads jest-dom matchers
+- Setup file at `src/test/setup.ts` loads jest-dom matchers and registers global polyfills (e.g., `ResizeObserver`)
+- Dexie test cleanup: use `clearAllTables()` in `beforeEach` and `deleteDatabase()` in `afterAll` from `@/test/db-helpers` — do not inline `db.*.clear()` calls
 
 **Example**:
 ```tsx
@@ -177,21 +180,16 @@ Place a single smoke-test file at `src/components/ui-components.test.tsx` (outsi
 - TypeScript types for all tables live in `src/lib/db/types.ts`
 - Data access functions are organized by table: `conversations.ts`, `messages.ts`, `settings.ts`
 - Barrel export at `src/lib/db/index.ts` re-exports everything
-- Import from `@/lib/db` for all data layer access
+- Import runtime values (functions, `db` instance) from the barrel `@/lib/db`
+- Import types from `@/lib/db/types` directly (type-only imports)
 
 **Example**:
 ```ts
-// Data access functions and types
-import {
-  createConversation,
-  addMessage,
-  getSettings,
-  type Conversation,
-  type Provider,
-} from '@/lib/db'
+// Runtime functions and db instance from barrel
+import { createConversation, addMessage, getSettings, db } from '@/lib/db'
 
-// Direct db access (for useLiveQuery, advanced queries)
-import { db } from '@/lib/db'
+// Type-only imports from types module directly
+import type { Conversation, Provider, Message } from '@/lib/db/types'
 ```
 
 **Why**: Keeps the data layer modular and testable. The barrel export provides a clean public API while internal files can be refactored freely. Separating types from schema from access functions prevents circular dependencies.
@@ -325,7 +323,7 @@ export const ModelColumn = memo(function ModelColumn({ provider, label }: Props)
 - **Fix for component isolation**: Set `sidebarOpen: false` in Zustand `beforeEach` when testing components that don't need the sidebar
 - **Fix for sidebar tests**: Use `within(container.querySelector('aside')!)` to scope queries to the desktop variant; use `fireEvent.click` instead of `userEvent.click` to bypass pointer-event checks
 - **Fix for hidden elements**: The desktop aside has `class="hidden md:block"` which makes it `display: none` in jsdom. Use `{ hidden: true }` option with `getByRole` to find elements inside it
-- Polyfill `ResizeObserver` as a class (not a mock) for Radix ScrollArea: `class ResizeObserverStub { observe() {} unobserve() {} disconnect() {} }`
+- `ResizeObserver` is globally polyfilled in `src/test/setup.ts` — do not add per-file stubs. The polyfill is required for Radix ScrollArea.
 
 **Why**: These workarounds are necessary because jsdom lacks CSS layout engine features (media queries, computed visibility). Document them here to prevent future developers from debugging the same issues.
 
@@ -569,6 +567,7 @@ const isLoading = claudeRef.current?.isLoading // React 19 ESLint error
 
 **When to use**: When referencing model IDs, display names, or provider-level display constants.
 
+- `PROVIDERS`: Frozen array of all provider keys, derived from `MODEL_OPTIONS`. Use this instead of hardcoding `['claude', 'chatgpt', 'gemini']`.
 - `MODEL_OPTIONS`: Per-provider lists of available models (id + label), ordered by preference (default first)
 - `DEFAULT_MODELS`: Per-provider default model IDs, derived from `MODEL_OPTIONS[provider][0].id`. Used by Zustand store and Dexie settings to avoid duplicating model IDs.
 - `MODEL_DISPLAY_NAMES`: Flat map from model ID to display name

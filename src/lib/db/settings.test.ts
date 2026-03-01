@@ -5,18 +5,16 @@
 
 import 'fake-indexeddb/auto'
 
-import { db } from '@/lib/db/schema'
+import { clearAllTables, deleteDatabase } from '@/test/db-helpers'
 
 import { getSettings, updateSettings } from './settings'
 
 beforeEach(async () => {
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await clearAllTables()
 })
 
 afterAll(async () => {
-  await db.delete()
+  await deleteDatabase()
 })
 
 describe('settings', () => {

@@ -7,11 +7,9 @@
 
 import { db } from '@/lib/db'
 
-/** Clear all Dexie tables (conversations, messages, settings). */
+/** Clear all Dexie tables. Iterates db.tables so new tables are covered automatically. */
 export async function clearAllTables(): Promise<void> {
-  await db.conversations.clear()
-  await db.messages.clear()
-  await db.settings.clear()
+  await Promise.all(db.tables.map((t) => t.clear()))
 }
 
 /** Delete the entire Dexie database (use in afterAll for clean teardown). */
