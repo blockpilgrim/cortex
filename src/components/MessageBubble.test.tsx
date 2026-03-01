@@ -8,6 +8,7 @@
  * - Streaming cursor indicator
  * - Timestamp display
  * - formatTime edge cases
+ * - Cross-feed indicator (isCrossFeed prop)
  */
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
@@ -178,6 +179,58 @@ describe('MessageBubble', () => {
       )
       const bubble = container.firstElementChild as HTMLElement
       expect(bubble.className).toContain('bg-card')
+    })
+  })
+
+  describe('cross-feed indicator', () => {
+    it('renders "Cross-feed" label when isCrossFeed is true', () => {
+      render(
+        <MessageBubble role="assistant" content="Cross-feed response" isCrossFeed />,
+      )
+      expect(screen.getByText('Cross-feed')).toBeInTheDocument()
+    })
+
+    it('renders dashed border class when isCrossFeed is true', () => {
+      const { container } = render(
+        <MessageBubble role="assistant" content="CF message" isCrossFeed />,
+      )
+      const bubble = container.firstElementChild as HTMLElement
+      expect(bubble.className).toContain('border-dashed')
+    })
+
+    it('does not render cross-feed indicator when isCrossFeed is false', () => {
+      render(
+        <MessageBubble role="assistant" content="Normal message" isCrossFeed={false} />,
+      )
+      expect(screen.queryByText('Cross-feed')).not.toBeInTheDocument()
+    })
+
+    it('does not render cross-feed indicator when isCrossFeed is omitted', () => {
+      render(<MessageBubble role="assistant" content="Default message" />)
+      expect(screen.queryByText('Cross-feed')).not.toBeInTheDocument()
+    })
+
+    it('does not apply dashed border when isCrossFeed is false', () => {
+      const { container } = render(
+        <MessageBubble role="assistant" content="No border" />,
+      )
+      const bubble = container.firstElementChild as HTMLElement
+      expect(bubble.className).not.toContain('border-dashed')
+    })
+
+    it('renders cross-feed indicator on user messages', () => {
+      render(
+        <MessageBubble role="user" content="Cross-feed user msg" isCrossFeed />,
+      )
+      expect(screen.getByText('Cross-feed')).toBeInTheDocument()
+    })
+
+    it('renders dashed border on user messages when isCrossFeed is true', () => {
+      const { container } = render(
+        <MessageBubble role="user" content="CF user msg" isCrossFeed />,
+      )
+      const bubble = container.firstElementChild as HTMLElement
+      expect(bubble.className).toContain('border-dashed')
     })
   })
 })

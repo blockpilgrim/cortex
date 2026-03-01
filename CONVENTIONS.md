@@ -15,6 +15,7 @@ src/
   lib/           # Shared utilities and core modules
     db/          # Data layer (Dexie schema, types, data access functions)
     models.ts    # Model definitions, display names, provider constants
+    crossfeed.ts # Cross-feed message construction utilities (pure functions)
     store.ts     # Zustand store (ephemeral UI state)
     utils.ts     # Utility functions (cn(), helpers)
   hooks/         # Custom React hooks
@@ -431,14 +432,20 @@ vi.mock('@ai-sdk/anthropic', () => ({ createAnthropic: mockCreateAnthropic }))
 
 **Example**:
 ```tsx
-const { messages, send, isLoading, error, stop, clearError } = useProviderChat({
+const { messages, send, isLoading, error, stop, clearError, crossFeedIds } = useProviderChat({
   provider: 'claude',
   conversationId: activeConversationId,
   model: 'claude-sonnet-4-20250514',
 })
+
+// Regular send
+await send('Hello')
+
+// Cross-feed send with metadata
+await send(crossFeedText, { isCrossFeed: true, crossFeedRound: 1 })
 ```
 
-**Why**: Encapsulates all streaming, persistence, and state sync concerns in a single hook. Each column is fully self-contained — the parent only needs to call `send()`.
+**Why**: Encapsulates all streaming, persistence, and state sync concerns in a single hook. Each column is fully self-contained — the parent only needs to call `send()`. Cross-feed metadata (`SendOptions`) is threaded through to Dexie persistence via `pendingCrossFeedRef` so `onFinish` can tag the assistant response.
 
 ---
 
@@ -454,7 +461,7 @@ const { messages, send, isLoading, error, stop, clearError } = useProviderChat({
 ```tsx
 // Child component
 export interface ModelColumnHandle {
-  send: (text: string) => Promise<boolean>
+  send: (text: string, options?: SendOptions) => Promise<boolean>
 }
 
 export const ModelColumn = memo(
@@ -605,3 +612,76 @@ useEffect(() => () => {
 ```
 
 **Why**: Without debouncing, each keystroke fires a full Dexie read-write transaction. For a 50-character API key, that is 50 sequential IndexedDB transactions. Debouncing batches rapid changes into a single write.
+
+---
+
+## Cross-Feed: Pure Functions for Message Construction
+
+**When to use**: When building features that construct messages or transform data before sending to providers.
+
+- Keep message construction logic in pure utility functions (`src/lib/crossfeed.ts`)
+- Separate orchestration (React hooks, callbacks) from data transformation
+- Pure functions are trivially testable — no mocking needed
+
+**Example**:
+```ts
+import { buildCrossFeedMessages, findLastAssistant, getNextCrossFeedRound } from '@/lib/crossfeed'
+
+// Pure functions — no side effects, easy to test
+const messages = buildCrossFeedMessages({ claude: '...', chatgpt: '...', gemini: '...' })
+const lastAssistant = findLastAssistant(messageArray)
+const round = getNextCrossFeedRound(claudeMsgs, chatgptMsgs, geminiMsgs)
+```
+
+**Why**: Pure functions are the most testable unit of code. The 24 cross-feed unit tests run in ~2ms total. Keeping message construction separate from React orchestration means the logic can be reused if cross-feed evolves (e.g., selective provider cross-feed, custom prompts).
+
+---
+
+## SendOptions Metadata Threading via Ref
+
+**When to use**: When request-specific metadata needs to travel from `send()` to `onFinish()` through the AI SDK's streaming lifecycle.
+
+- Store metadata in a ref (`pendingCrossFeedRef`) before sending
+- Read the ref in `onFinish` to tag the persisted assistant message
+- Clear the ref after persistence completes
+
+**Example**:
+```ts
+// In send()
+pendingCrossFeedRef.current = options ?? {}
+await sendMessage({ text })
+
+// In onFinish
+const crossFeedOpts = pendingCrossFeedRef.current
+await addMessage({ ...msgData, isCrossFeed: crossFeedOpts.isCrossFeed })
+pendingCrossFeedRef.current = {}
+```
+
+**Why**: The AI SDK's `useChat` does not provide a way to attach arbitrary metadata to a request that flows through to `onFinish`. A ref bridges this gap without modifying the transport or message format. Each hook instance has its own ref, so concurrent cross-feed sends across providers are safe.
+
+---
+
+## useLiveQuery for Boolean Availability Checks
+
+**When to use**: When a UI element needs to reactively enable/disable based on Dexie data state.
+
+- Return a boolean from `useLiveQuery`, not full data objects
+- Provide a default value (third argument) for the loading state
+- Use count queries or existence checks for efficiency
+
+**Example**:
+```tsx
+const hasCrossFeedContent = useLiveQuery(
+  async () => {
+    if (activeConversationId === null) return false
+    const counts = await Promise.all(
+      providers.map((p) => db.messages.where(...).filter(...).count()),
+    )
+    return counts.every((c) => c > 0)
+  },
+  [activeConversationId],
+  false, // default while loading
+)
+```
+
+**Why**: `useLiveQuery` re-runs on any Dexie table change. Returning a boolean minimizes re-render impact — the component only updates when the boolean flips, not on every message write.

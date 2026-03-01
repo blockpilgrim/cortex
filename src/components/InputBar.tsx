@@ -87,7 +87,7 @@ export function InputBar({
           className="flex-1"
         />
         <Button
-          onClick={onCrossFeed}
+          onClick={() => onCrossFeed?.()}
           disabled={!hasCrossFeedContent || isStreaming}
           size="icon"
           variant="outline"

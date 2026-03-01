@@ -53,3 +53,16 @@ Significant decisions made during implementation. Referenced by CLAUDE.md's Comp
 **Decision:** Duplicate the type definition in both locations. Do not create a shared types package.
 
 **Consequence:** If the provider list changes, both files must be updated. This is acceptable given the type is a simple union of 3 literals that changes rarely. A shared package can be extracted later if needed.
+
+---
+
+## 005: Cross-feed as pure functions + SendOptions extension
+
+**Date:** 2026-03-01
+**Phase:** 8
+
+**Context:** Cross-feed needs to construct per-provider messages (each containing the other two models' responses), send them concurrently, and persist them with `isCrossFeed`/`crossFeedRound` metadata. Several approaches were considered: (a) a separate `sendCrossFeed()` method on the hook, (b) a `CrossFeedManager` class, (c) pure utility functions + optional `SendOptions` on the existing `send()`.
+
+**Decision:** Use pure utility functions in `src/lib/crossfeed.ts` for message construction, and extend the existing `send(text, options?)` signature with an optional `SendOptions` parameter for metadata. Orchestration lives in `App.tsx`'s `handleCrossFeed` callback. Cross-feed visual state tracked via a `Set<string>` of UIMessage IDs in `useProviderChat`.
+
+**Consequence:** Cross-feed message construction is trivially testable (24 pure function tests). The `send()` API remains backward-compatible. The `Set<string>` tracking grows within a session but resets on conversation switch and rebuilds from Dexie on load. No new hooks or classes needed — cross-feed is an orchestration concern in the parent, not a per-column concern.
