@@ -51,6 +51,7 @@ describe('MODEL_OPTIONS', () => {
 
   it('contains the correct ChatGPT model IDs', () => {
     const ids = MODEL_OPTIONS.chatgpt.map((m) => m.id)
+    expect(ids).toContain('gpt-5.4')
     expect(ids).toContain('gpt-5.2')
     expect(ids).toContain('gpt-5.3-codex')
   })
@@ -74,8 +75,8 @@ describe('MODEL_OPTIONS', () => {
   })
 
   it('has the default model first for each provider', () => {
-    expect(MODEL_OPTIONS.claude[0].id).toBe('claude-sonnet-4-6')
-    expect(MODEL_OPTIONS.chatgpt[0].id).toBe('gpt-5.2')
+    expect(MODEL_OPTIONS.claude[0].id).toBe('claude-opus-4-6')
+    expect(MODEL_OPTIONS.chatgpt[0].id).toBe('gpt-5.4')
     expect(MODEL_OPTIONS.gemini[0].id).toBe('google/gemini-3.1-pro-preview')
   })
 
@@ -120,11 +121,12 @@ describe('MODEL_DISPLAY_NAMES', () => {
 
 describe('getModelDisplayName', () => {
   it('returns the correct display name for known model IDs', () => {
-    expect(getModelDisplayName('claude-sonnet-4-6')).toBe('Sonnet 4.6')
-    expect(getModelDisplayName('claude-opus-4-6')).toBe('Opus 4.6')
-    expect(getModelDisplayName('gpt-5.2')).toBe('GPT-5.2')
-    expect(getModelDisplayName('gpt-5.3-codex')).toBe('GPT-5.3 Codex')
-    expect(getModelDisplayName('google/gemini-3.1-pro-preview')).toBe('Gemini 3.1 Pro')
+    expect(getModelDisplayName('claude-opus-4-6')).toBe('Opus 4.6 (Max Thinking)')
+    expect(getModelDisplayName('claude-sonnet-4-6')).toBe('Sonnet 4.6 (Max Thinking)')
+    expect(getModelDisplayName('gpt-5.4')).toBe('GPT-5.4 (Extra High)')
+    expect(getModelDisplayName('gpt-5.2')).toBe('GPT-5.2 (Extra High)')
+    expect(getModelDisplayName('gpt-5.3-codex')).toBe('GPT-5.3 Codex (Extra High)')
+    expect(getModelDisplayName('google/gemini-3.1-pro-preview')).toBe('Gemini 3.1 Pro (High)')
   })
 
   it('falls back to raw ID for deprecated model IDs', () => {
@@ -160,6 +162,7 @@ describe('toOpenRouterModelId', () => {
   })
 
   it('maps OpenAI model IDs to OpenRouter format', () => {
+    expect(toOpenRouterModelId('gpt-5.4')).toBe('openai/gpt-5.4')
     expect(toOpenRouterModelId('gpt-5.2')).toBe('openai/gpt-5.2')
     expect(toOpenRouterModelId('gpt-5.3-codex')).toBe('openai/gpt-5.3-codex')
   })

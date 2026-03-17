@@ -33,6 +33,7 @@ const BASE_PRICING: Record<string, ModelPricing> = {
   'claude-opus-4-6': { inputPer1M: 5, outputPer1M: 25 },
 
   // OpenAI
+  'gpt-5.4': { inputPer1M: 2.5, outputPer1M: 15 },
   'gpt-5.2': { inputPer1M: 1.75, outputPer1M: 14 },
   'gpt-5.3-codex': { inputPer1M: 1.75, outputPer1M: 14 },
 

@@ -57,7 +57,7 @@ afterAll(async () => {
 describe('ModelColumn', () => {
   it('renders the model display name and provider logo', () => {
     render(<ModelColumn provider="claude" label="Claude" />)
-    expect(screen.getByText('Sonnet 4.6')).toBeInTheDocument()
+    expect(screen.getByText('Opus 4.6 (Max Thinking)')).toBeInTheDocument()
     expect(screen.getByLabelText('Claude conversation')).toBeInTheDocument()
   })
 

@@ -198,8 +198,8 @@ describe('UsageSummary', () => {
       openPopover()
 
       await waitFor(() => {
-        // Model display name for 'claude-sonnet-4-6' is 'Sonnet 4.6'
-        expect(screen.getAllByText('Sonnet 4.6').length).toBeGreaterThanOrEqual(
+        // Model display name for 'claude-sonnet-4-6' is 'Sonnet 4.6 (Max Thinking)'
+        expect(screen.getAllByText('Sonnet 4.6 (Max Thinking)').length).toBeGreaterThanOrEqual(
           1,
         )
       })

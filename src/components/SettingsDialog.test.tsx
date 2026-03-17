@@ -234,10 +234,10 @@ describe('SettingsDialog', () => {
 
       // Wait for dropdown to appear and select a different model
       await waitFor(() => {
-        expect(screen.getByText('Opus 4.6')).toBeInTheDocument()
+        expect(screen.getByText('Opus 4.6 (Max Thinking)')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByText('Opus 4.6'))
+      fireEvent.click(screen.getByText('Opus 4.6 (Max Thinking)'))
 
       // Verify Zustand store was updated
       await waitFor(() => {
@@ -267,10 +267,10 @@ describe('SettingsDialog', () => {
       fireEvent.click(claudeModelTrigger)
 
       await waitFor(() => {
-        expect(screen.getByText('Opus 4.6')).toBeInTheDocument()
+        expect(screen.getByText('Opus 4.6 (Max Thinking)')).toBeInTheDocument()
       })
 
-      fireEvent.click(screen.getByText('Opus 4.6'))
+      fireEvent.click(screen.getByText('Opus 4.6 (Max Thinking)'))
 
       // Verify Dexie was updated
       await waitFor(async () => {

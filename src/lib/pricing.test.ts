@@ -101,8 +101,8 @@ describe('MODEL_PRICING', () => {
   })
 
   it('contains pricing entries for both direct and OpenRouter model IDs', () => {
-    // 5 direct API IDs + 4 OpenRouter aliases (Gemini is same in both)
-    expect(Object.keys(MODEL_PRICING).length).toBe(9)
+    // 6 direct API IDs + 5 OpenRouter aliases (Gemini is same in both)
+    expect(Object.keys(MODEL_PRICING).length).toBe(11)
   })
 
   it('has matching pricing between direct and OpenRouter model IDs', () => {

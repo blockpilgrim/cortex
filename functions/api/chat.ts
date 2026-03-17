@@ -263,20 +263,26 @@ function createModel(_provider: Provider, model: string, apiKey: string) {
 /**
  * Provider-specific options to enable thinking/reasoning for each provider.
  *
- * All providers now route through OpenRouter, so all use the `openrouter` key.
- * - Claude: adaptive thinking via OpenRouter's provider passthrough
- * - OpenAI: reasoning effort set to 'high'
- * - Gemini: reasoning with effort set to 'high'
+ * All providers route through OpenRouter, so all use the `openrouter` key.
+ * These are spread into the OpenRouter API request body by the provider SDK.
+ *
+ * - Claude: Adaptive thinking + max effort via Anthropic pass-through params.
+ *   `thinking` enables adaptive extended thinking; `output_config.effort: 'max'`
+ *   provides the absolute highest reasoning capability (Opus 4.6 only).
+ *   OpenRouter maps these to Anthropic's native API format.
+ * - OpenAI: reasoning effort set to 'xhigh' (~95% of max_tokens for reasoning)
+ * - Gemini: reasoning effort set to 'high' (max for Gemini; xhigh maps to high)
  */
 const PROVIDER_OPTIONS = {
   claude: {
     openrouter: {
       thinking: { type: 'adaptive' },
+      output_config: { effort: 'max' },
     },
   },
   chatgpt: {
     openrouter: {
-      reasoningEffort: 'high',
+      reasoning: { effort: 'xhigh' },
     },
   },
   gemini: {

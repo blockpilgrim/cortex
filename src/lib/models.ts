@@ -18,14 +18,15 @@ export interface ModelOption {
 /** Available models per provider, ordered by preference (default first). */
 export const MODEL_OPTIONS: Record<Provider, ModelOption[]> = {
   claude: [
-    { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
-    { id: 'claude-opus-4-6', label: 'Opus 4.6' },
+    { id: 'claude-opus-4-6', label: 'Opus 4.6 (Max Thinking)' },
+    { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6 (Max Thinking)' },
   ],
   chatgpt: [
-    { id: 'gpt-5.2', label: 'GPT-5.2' },
-    { id: 'gpt-5.3-codex', label: 'GPT-5.3 Codex' },
+    { id: 'gpt-5.4', label: 'GPT-5.4 (Extra High)' },
+    { id: 'gpt-5.2', label: 'GPT-5.2 (Extra High)' },
+    { id: 'gpt-5.3-codex', label: 'GPT-5.3 Codex (Extra High)' },
   ],
-  gemini: [{ id: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro' }],
+  gemini: [{ id: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro (High)' }],
 }
 
 /**
@@ -37,10 +38,11 @@ export const MODEL_OPTIONS: Record<Provider, ModelOption[]> = {
  */
 export const OPENROUTER_MODEL_MAP: Record<string, string> = {
   // Claude
-  'claude-sonnet-4-6': 'anthropic/claude-sonnet-4-6',
   'claude-opus-4-6': 'anthropic/claude-opus-4-6',
+  'claude-sonnet-4-6': 'anthropic/claude-sonnet-4-6',
 
   // OpenAI
+  'gpt-5.4': 'openai/gpt-5.4',
   'gpt-5.2': 'openai/gpt-5.2',
   'gpt-5.3-codex': 'openai/gpt-5.3-codex',
 

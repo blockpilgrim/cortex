@@ -336,22 +336,23 @@ describe('providerOptions (thinking/reasoning)', () => {
     return mockStreamText.mock.calls[0][0] as StreamTextArgs
   }
 
-  it('passes openrouter thinking config for claude provider', async () => {
+  it('passes openrouter thinking + max effort config for claude provider', async () => {
     const args = await captureStreamTextArgs(
       'claude',
-      'anthropic/claude-sonnet-4-6',
+      'anthropic/claude-opus-4-6',
     )
     expect(args.providerOptions).toBeDefined()
     expect(args.providerOptions!.openrouter).toEqual({
       thinking: { type: 'adaptive' },
+      output_config: { effort: 'max' },
     })
   })
 
-  it('passes openrouter reasoning effort for chatgpt provider', async () => {
-    const args = await captureStreamTextArgs('chatgpt', 'openai/gpt-5.2')
+  it('passes openrouter xhigh reasoning effort for chatgpt provider', async () => {
+    const args = await captureStreamTextArgs('chatgpt', 'openai/gpt-5.4')
     expect(args.providerOptions).toBeDefined()
     expect(args.providerOptions!.openrouter).toEqual({
-      reasoningEffort: 'high',
+      reasoning: { effort: 'xhigh' },
     })
   })
 
@@ -368,8 +369,8 @@ describe('providerOptions (thinking/reasoning)', () => {
 
   it('all providers use the openrouter key in providerOptions', async () => {
     for (const [provider, model] of [
-      ['claude', 'anthropic/claude-sonnet-4-6'],
-      ['chatgpt', 'openai/gpt-5.2'],
+      ['claude', 'anthropic/claude-opus-4-6'],
+      ['chatgpt', 'openai/gpt-5.4'],
       ['gemini', 'google/gemini-3.1-pro-preview'],
     ] as const) {
       vi.clearAllMocks()
