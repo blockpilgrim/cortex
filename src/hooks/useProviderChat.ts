@@ -17,6 +17,14 @@ import type { Provider, TokenCount } from '@/lib/db/types'
 import { toOpenRouterModelId } from '@/lib/models'
 import { useAppStore } from '@/lib/store'
 
+/**
+ * How long (ms) to wait in the 'submitted' state (no tokens received)
+ * before treating the request as timed out. Reasoning models may take
+ * a while, but 2 minutes with zero data is a strong signal the
+ * connection was silently dropped.
+ */
+const SUBMITTED_TIMEOUT_MS = 120_000
+
 interface UseProviderChatOptions {
   /** Which AI provider this chat instance is for. */
   provider: Provider
@@ -174,14 +182,18 @@ export function useProviderChat({
     [], // Intentionally stable -- uses refs for dynamic values
   )
 
+  // Local error state for timeout detection (useChat's error state is internal
+  // and can't be set from outside).
+  const [localError, setLocalError] = useState<Error | undefined>(undefined)
+
   const {
     messages,
     setMessages,
     sendMessage,
     stop,
     status,
-    error,
-    clearError,
+    error: chatError,
+    clearError: chatClearError,
   } = useChat({
     id: `${provider}-${conversationId ?? 'none'}`,
     transport,
@@ -283,6 +295,41 @@ export function useProviderChat({
     setStreamingStatus(provider, isActive)
   }, [status, provider, setStreamingStatus])
 
+  // Timeout watchdog: if we stay in 'submitted' state (waiting for first
+  // token) for too long, the connection was likely silently dropped by
+  // infrastructure (Cloudflare idle timeout, network proxy, etc.).
+  // Abort the request and surface a user-visible error.
+  useEffect(() => {
+    if (status !== 'submitted') return
+
+    const timer = setTimeout(() => {
+      console.warn(`[${provider}] Request timed out waiting for first token`)
+      stop()
+      setLocalError(
+        new Error(
+          'No response received — the model may have timed out during reasoning. Please try again.',
+        ),
+      )
+    }, SUBMITTED_TIMEOUT_MS)
+
+    return () => clearTimeout(timer)
+  }, [status, stop, provider])
+
+  // Clear local timeout error when a real stream starts or a new request
+  // is initiated (status transitions away from the error state).
+  useEffect(() => {
+    if (status === 'streaming') {
+      setLocalError(undefined)
+    }
+  }, [status])
+
+  // Merge useChat's error with our local timeout error.
+  const error = chatError ?? localError
+  const clearError = useCallback(() => {
+    chatClearError()
+    setLocalError(undefined)
+  }, [chatClearError])
+
   // Seed messages from Dexie when the conversation changes
   useEffect(() => {
     if (conversationId === null) {
@@ -338,6 +385,9 @@ export function useProviderChat({
       if (status !== 'ready') return false
 
       try {
+        // Clear any previous timeout error on new send
+        setLocalError(undefined)
+
         // Store cross-feed metadata so onFinish can use it for the assistant message
         pendingCrossFeedRef.current = options ?? {}
 

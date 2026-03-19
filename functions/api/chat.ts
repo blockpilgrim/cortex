@@ -293,6 +293,93 @@ const PROVIDER_OPTIONS = {
 } as const satisfies Record<Provider, Record<string, Record<string, unknown>>>
 
 // ---------------------------------------------------------------------------
+// Stream Keep-Alive
+// ---------------------------------------------------------------------------
+
+/**
+ * Maximum time (ms) to wait for a provider response before aborting.
+ * Reasoning models (GPT with xhigh effort, Claude with extended thinking)
+ * can take minutes before emitting the first token. 5 minutes is generous
+ * enough for deep reasoning while still preventing infinite hangs.
+ */
+const STREAM_TIMEOUT_MS = 300_000
+
+/**
+ * Interval (ms) between SSE keep-alive comments injected into the stream.
+ * Cloudflare (and other proxies) may close idle connections after ~100s.
+ * 15s is well within that limit.
+ */
+const KEEPALIVE_INTERVAL_MS = 15_000
+
+/**
+ * Wraps a streaming Response to inject SSE keep-alive comments during idle
+ * periods. This prevents Cloudflare (and other reverse proxies) from closing
+ * connections that appear idle while AI models reason internally.
+ *
+ * SSE comments (lines starting with `:`) are defined by the spec to be
+ * ignored by clients, so they are safe to inject into any SSE stream.
+ */
+function withKeepAlive(response: Response): Response {
+  const body = response.body
+  if (!body) return response
+
+  const encoder = new TextEncoder()
+  const keepAliveData = encoder.encode(': keepalive\n\n')
+  const reader = body.getReader()
+
+  let timer: ReturnType<typeof setInterval> | null = null
+  let closed = false
+
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      // Send keep-alive comments on a fixed interval
+      timer = setInterval(() => {
+        if (!closed) {
+          try {
+            controller.enqueue(keepAliveData)
+          } catch {
+            // Stream already closed/errored — clean up
+            closed = true
+            if (timer) clearInterval(timer)
+          }
+        }
+      }, KEEPALIVE_INTERVAL_MS)
+
+      // Pump data from the original stream to our wrapper
+      ;(async () => {
+        try {
+          for (;;) {
+            const { done, value } = await reader.read()
+            if (done) {
+              closed = true
+              if (timer) clearInterval(timer)
+              controller.close()
+              return
+            }
+            controller.enqueue(value)
+          }
+        } catch (err) {
+          closed = true
+          if (timer) clearInterval(timer)
+          controller.error(err)
+        }
+      })()
+    },
+    cancel() {
+      closed = true
+      if (timer) clearInterval(timer)
+      reader.cancel()
+    },
+  })
+
+  return new Response(stream, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Request Handlers
 // ---------------------------------------------------------------------------
 
@@ -344,11 +431,14 @@ export const onRequestPost: PagesFunction = async (context) => {
     // Create the provider-specific model instance
     const languageModel = createModel(provider, model, apiKey)
 
-    // Stream the response using AI SDK with provider-specific thinking/reasoning
+    // Stream the response using AI SDK with provider-specific thinking/reasoning.
+    // The abort signal ensures we don't wait forever for providers that hang
+    // (e.g., during long reasoning phases that exceed infrastructure timeouts).
     const result = streamText({
       model: languageModel,
       messages,
       providerOptions: PROVIDER_OPTIONS[provider],
+      abortSignal: AbortSignal.timeout(STREAM_TIMEOUT_MS),
     })
 
     // Return the stream as a UI message stream response (compatible with useChat).
@@ -376,8 +466,9 @@ export const onRequestPost: PagesFunction = async (context) => {
       },
     })
 
-    // Add CORS headers to the streaming response
-    return corsResponse(streamResponse)
+    // Wrap in keep-alive to prevent idle connection timeouts during
+    // long reasoning phases, then add CORS headers.
+    return corsResponse(withKeepAlive(streamResponse))
   } catch (err) {
     console.error(`[proxy] ${provider} caught error:`, err)
     const { status, body: errorBody } = mapError(err, provider)

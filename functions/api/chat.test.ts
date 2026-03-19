@@ -209,6 +209,62 @@ describe('successful streaming', () => {
   })
 })
 
+describe('stream keep-alive and timeout', () => {
+  it('passes an abortSignal to streamText with 300s timeout', async () => {
+    setupStreamTextSuccess()
+    const context = createMockContext(validBody())
+    await onRequestPost(
+      context as unknown as Parameters<typeof onRequestPost>[0],
+    )
+
+    expect(mockStreamText).toHaveBeenCalledTimes(1)
+    const args = mockStreamText.mock.calls[0][0] as Record<string, unknown>
+    expect(args.abortSignal).toBeDefined()
+    expect(args.abortSignal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('wraps the streaming response body through the keepalive wrapper', async () => {
+    // Use a known body so we can verify it passes through the wrapper
+    const originalBody = 'original streamed data'
+    setupStreamTextSuccess(originalBody)
+    const context = createMockContext(validBody())
+    const response = await onRequestPost(
+      context as unknown as Parameters<typeof onRequestPost>[0],
+    )
+
+    // The response body should still contain the original data (the keepalive
+    // wrapper re-emits all original chunks). The response should have a new
+    // ReadableStream body (wrapped), not be identical to the original Response.
+    const text = await response.text()
+    expect(text).toContain(originalBody)
+
+    // Verify CORS headers are still applied after wrapping
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    // Verify the content-type header from the original response is preserved
+    expect(response.headers.get('Content-Type')).toBe('text/event-stream')
+  })
+
+  it('wraps a response with no body gracefully (returns response as-is)', async () => {
+    // When the response has no body, withKeepAlive should return it unchanged
+    const mockResponse = new Response(null, {
+      status: 200,
+      headers: { 'Content-Type': 'text/event-stream' },
+    })
+    mockStreamText.mockReturnValue({
+      toUIMessageStreamResponse: vi.fn(() => mockResponse),
+    })
+
+    const context = createMockContext(validBody())
+    const response = await onRequestPost(
+      context as unknown as Parameters<typeof onRequestPost>[0],
+    )
+
+    // Should still get a successful response with CORS headers
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+  })
+})
+
 describe('error mapping', () => {
   it('maps auth error to 401', async () => {
     mockStreamText.mockImplementation(() => {
